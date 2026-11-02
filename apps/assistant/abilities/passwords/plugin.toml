@@ -1,10 +1,10 @@
 manifest_version = 1
 id = "passwords"
-version = "1.0.0"
-description = "Nyx Passwords: find logins and copy them to the clipboard (the value never comes back)"
+version = "1.1.0"
+description = "Nyx Passwords: find logins, copy them or a new password to the clipboard (the value never comes back), count weak passwords, show a login"
 executable = "nyx-passwords-assistant"
 args = []
-tools = ["passwords.find", "passwords.copy"]
+tools = ["passwords.find", "passwords.copy", "passwords.generate", "passwords.security_summary", "passwords.open"]
 
 [[routes]]
 pattern = "^(?i:copy (?:my |the )?(?:one-time )?(?P<field>password|username|code) for (?P<query>.+))$"
@@ -14,6 +14,19 @@ template = true
 [[routes]]
 pattern = "^(?i:find (?:my )?(?P<query>.+?) logins?)$"
 tool = "passwords.find"
+template = true
+
+[[routes]]
+pattern = "^(?i:(?:generate|make|create) (?:me )?(?:a )?(?:new |strong )?password)$"
+tool = "passwords.generate"
+
+[[routes]]
+pattern = "^(?i:how (?:safe|secure|strong) are my passwords\\??|password (?:health|security) (?:check|report|summary))$"
+tool = "passwords.security_summary"
+
+[[routes]]
+pattern = "^(?i:(?:open|show) (?:my )?(?P<query>.+?) login(?: in passwords)?)$"
+tool = "passwords.open"
 template = true
 
 # The program comes with Nyx Passwords. Its daemon answers only the suite's own

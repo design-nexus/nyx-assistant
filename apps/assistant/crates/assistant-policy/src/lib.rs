@@ -393,15 +393,19 @@ mod tests {
         let mut c = cx(&rules);
         c.resource_approved = true;
         c.tool_rule = Some(Decision::Allow);
-        for t in ["passwords.find", "passwords.copy"] {
+        for t in ["passwords.find", "passwords.copy", "passwords.generate", "passwords.security_summary", "passwords.open"] {
             let v = decide(t, &c);
             assert_eq!((v.capability(), v.decision()), (Capability::Secrets, Decision::Ask), "{t}");
             assert!(!v.capability().voice_approvable(), "{t}: a spoken approve doesn't count");
             assert!(!v.capability().task_approvable(), "{t}: each call is approved on its own");
+            assert!(!Capability::sends_out(t, &serde_json::json!({})), "{t}: nothing leaves the computer");
         }
         // What find returns is private, and may carry other people's words.
         assert!(Capability::reads_private("passwords.find") && Capability::brings_in_untrusted("passwords.find"));
         assert!(!Capability::reads_private("passwords.copy"), "copy returns only that it copied");
+        assert!(!Capability::reads_private("passwords.generate"), "generate returns only that it copied");
+        assert!(Capability::reads_private("passwords.security_summary"));
+        assert!(!Capability::brings_in_untrusted("passwords.security_summary"), "counts only");
     }
 
     #[test]

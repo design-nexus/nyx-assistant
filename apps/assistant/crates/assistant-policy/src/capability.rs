@@ -43,9 +43,9 @@ pub enum Capability {
     /// Reading and operating app windows (`ui.*`, `screen.*`, `input.*`). Asks with a key
     /// press; one approval may cover the rest of a task.
     ComputerUse,
-    /// Finding logins in Nyx Passwords and copying one to the clipboard
-    /// (`passwords.find`, `passwords.copy`). Always asks, with a key press, one call at a
-    /// time.
+    /// Nyx Passwords: finding logins, copying one or a new password to the clipboard,
+    /// counting weak passwords, showing a login (`passwords.*`). Always asks, with a key
+    /// press, one call at a time.
     Secrets,
     /// Never runs.
     Disabled,
@@ -125,7 +125,9 @@ impl Capability {
             "app.launch" | "apps.launch" | "agent.handoff" => return Self::AppLaunch,
             "system.shutdown" => return Self::Shutdown,
             "capture.screen" | "capture.clipboard" => return Self::Capture,
-            "passwords.find" | "passwords.copy" => return Self::Secrets,
+            "passwords.find" | "passwords.copy" | "passwords.generate" | "passwords.security_summary" | "passwords.open" => {
+                return Self::Secrets;
+            }
             "history.undo" | "history.undo_task" => return Self::PluginData,
             "notes.vault_search" | "notes.vault_read" | "notes.vault_open" | "notes.vault_proposal_status" => return Self::FileRead,
             // Nyx apps worked directly: reading a file in, typing into a document, saving.
@@ -244,7 +246,8 @@ impl Capability {
         match c {
             Self::FileRead | Self::Capture => true,
             Self::PluginData | Self::ComputerUse | Self::Terminal => c.passive(tool) || COMPUTER_READS.contains(&tool),
-            Self::Secrets => tool == "passwords.find",
+            // How many weak passwords the user has is theirs too, though no login is named.
+            Self::Secrets => matches!(tool, "passwords.find" | "passwords.security_summary"),
             _ => false,
         }
     }

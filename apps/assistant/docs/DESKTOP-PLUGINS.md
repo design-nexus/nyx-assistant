@@ -206,6 +206,13 @@ It runs `nyx-passwords-assistant`, which comes with Passwords, and does nothing 
 Say **"find my GitHub logins"** or **"copy my password for GitHub"** (also `username` and
 `one-time code`). `passwords.find` returns names, usernames and sites; `passwords.copy`
 puts the value on the clipboard through Passwords, which clears it later, and returns only
-that it copied. No password reaches the assistant. Both ask every time, with a key press
-(a spoken "approve" doesn't count), one call at a time. Logins that ask for the master
-password are copied in Passwords only.
+that it copied. No password reaches the assistant.
+
+Say **"generate a password"** (`passwords.generate`: a new one from Passwords' generator
+settings, onto the clipboard the same way), **"how safe are my passwords?"**
+(`passwords.security_summary`: how many logins have weak, reused or year-old passwords,
+counts only) or **"show my GitHub login"** (`passwords.open`: the login in the Passwords
+window).
+
+Every tool asks every time, with a key press (a spoken "approve" doesn't count), one call
+at a time. Logins that ask for the master password are copied in Passwords only.
