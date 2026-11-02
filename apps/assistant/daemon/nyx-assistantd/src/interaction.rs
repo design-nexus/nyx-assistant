@@ -375,6 +375,9 @@ impl App {
         self.pending.remove(&id);
         self.emit_session();
         let approved = approved && !cancel.is_cancelled() && now_ms() < expires;
+        // A key press can come from any program running as the user; using a secret also
+        // takes the person signing in (sign_in.rs).
+        let approved = approved && (verdict.capability() != assistant_policy::Capability::Secrets || super::sign_in::confirm(&summary).await);
         Ok((approved, approved && for_task && task_scope))
     }
     pub(super) async fn control_phrase(self: &Arc<Self>, text: &str, timing: &TurnTiming) -> Result<bool> {
