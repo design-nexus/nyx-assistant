@@ -9,6 +9,8 @@ mod approvals;
 mod duplex;
 #[path = "interaction.rs"]
 mod interaction;
+#[path = "sign_in.rs"]
+mod sign_in;
 #[path = "proactive.rs"]
 #[allow(dead_code)]
 mod proactive;
