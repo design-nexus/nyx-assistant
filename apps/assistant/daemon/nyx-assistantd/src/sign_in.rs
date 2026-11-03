@@ -39,9 +39,9 @@ pub(crate) async fn confirm() -> bool {
 }
 
 async fn broker() -> zbus::Result<nyx_auth_proto::Reply> {
-    use nyx_auth_proto::{AuthProxy, Request, Surface};
+    use nyx_auth_proto::{Request, Surface};
     let conn = zbus::Connection::session().await?;
-    AuthProxy::new(&conn)
+    nyx_auth_proto::connect(&conn)
         .await?
         .authenticate(Request {
             action: "io.github.design_nexus.nyx.assistant.secrets".into(),
