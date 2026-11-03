@@ -25,22 +25,17 @@ fn subject() -> Option<String> {
     Some(format!("{},{start},{uid}", std::process::id()))
 }
 
-/// One short, plain line for the system prompt.
-fn message(summary: &str) -> String {
-    let clean: String = summary.chars().filter(|c| !c.is_control()).take(100).collect();
-    format!("Allow the Assistant to {}", clean.trim())
-}
-
 /// Whether the person confirmed. Without Nyx Biometrics there's nothing more to ask.
-pub(crate) async fn confirm(summary: &str) -> bool {
+/// Polkit lets only root pass a message of its own, so the dialog shows the action's
+/// ("Confirm it's you to allow this"); the Assistant's approval already named the request.
+pub(crate) async fn confirm() -> bool {
     if !available() {
         return true;
     }
     let Some(subject) = subject() else { return false };
-    let msg = message(summary);
     tokio::task::spawn_blocking(move || {
         Command::new(PKCHECK)
-            .args(["--action-id", ACTION, "--process", &subject, "--allow-user-interaction", "--detail", "polkit.message", &msg])
+            .args(["--action-id", ACTION, "--process", &subject, "--allow-user-interaction"])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .status()
@@ -52,14 +47,6 @@ pub(crate) async fn confirm(summary: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn messages_are_one_short_line() {
-        assert_eq!(super::message("copy the password for github.com"), "Allow the Assistant to copy the password for github.com");
-        let long = super::message(&format!("{}\nINJECTED", "x".repeat(200)));
-        assert!(!long.contains('\n'));
-        assert!(long.len() <= 130);
-    }
-
     #[test]
     fn subject_names_this_process() {
         let s = super::subject().unwrap();
