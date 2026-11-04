@@ -11,11 +11,17 @@
 use std::process::Command;
 
 const ACTION: &str = "io.github.design_nexus.nyx.auth.app-action";
-const ACTIONS: &str = "/usr/share/polkit-1/actions/io.github.design_nexus.nyx.auth.unlock.policy";
-const PKCHECK: &str = "/usr/bin/pkcheck";
+const ACTIONS: &str = "share/polkit-1/actions/io.github.design_nexus.nyx.auth.unlock.policy";
+const PKCHECK: &str = "bin/pkcheck";
+
+/// The system's own copy of a file: under /usr, or the system profile on NixOS. Both
+/// belong to root; PATH isn't searched.
+fn system_file(relative: &str) -> Option<std::path::PathBuf> {
+    ["/usr", "/run/current-system/sw"].iter().map(|prefix| std::path::Path::new(prefix).join(relative)).find(|p| p.exists())
+}
 
 fn available() -> bool {
-    std::fs::read_to_string(ACTIONS).is_ok_and(|t| t.contains(ACTION))
+    system_file(ACTIONS).and_then(|p| std::fs::read_to_string(p).ok()).is_some_and(|t| t.contains(ACTION))
 }
 
 /// "pid,start-time,uid" for this process, so polkit can't be pointed at a reused pid.
@@ -55,9 +61,9 @@ async fn broker() -> zbus::Result<nyx_auth_proto::Reply> {
 /// Polkit lets only root pass a message of its own, so the dialog shows the action's
 /// ("Confirm it's you to allow this"); the Assistant's approval already named the request.
 async fn polkit() -> bool {
-    let Some(subject) = subject() else { return false };
+    let (Some(subject), Some(pkcheck)) = (subject(), system_file(PKCHECK)) else { return false };
     tokio::task::spawn_blocking(move || {
-        Command::new(PKCHECK)
+        Command::new(pkcheck)
             .args(["--action-id", ACTION, "--process", &subject, "--allow-user-interaction"])
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())

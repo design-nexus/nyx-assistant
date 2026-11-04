@@ -149,6 +149,8 @@ pub fn bwrap_args(profile: &SandboxProfile, launch: &Launch, home: &Path, runtim
         push(&["--unshare-net"]);
     }
     push(&["--ro-bind", "/usr", "/usr", "--ro-bind", "/etc", "/etc", "--ro-bind-try", "/opt", "/opt", "--ro-bind", "/sys", "/sys"]);
+    // NixOS keeps programs in /nix/store and reaches them through the system profile.
+    push(&["--ro-bind-try", "/nix/store", "/nix/store", "--ro-bind-try", "/run/current-system", "/run/current-system"]);
     for dir in ["/bin", "/lib", "/lib64", "/sbin"] {
         match std::fs::read_link(dir) {
             Ok(target) => push(&["--symlink", &target.display().to_string(), dir]),
