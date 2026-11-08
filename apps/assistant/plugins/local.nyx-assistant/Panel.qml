@@ -17,10 +17,11 @@ Panel {
 
   readonly property color fg: root.bar ? root.bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(fg, 1.45)
+  // The shell's theme colours; the shell has no green or amber, so those stay fixed.
   readonly property color warn: "#e8ba87"
   readonly property color green: "#a6e3a1"
-  readonly property color red: "#f38ba8"
-  readonly property color accent: "#89b4fa"
+  readonly property color red: Color.urgent
+  readonly property color accent: Color.accent
   readonly property string fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
 
   readonly property string helper: Qt.resolvedUrl("bin/assistant-bar-action").toString().replace(/^file:\/\//, "")

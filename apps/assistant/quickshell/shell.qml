@@ -8,6 +8,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import "Nyx/Theme"
 
 ShellRoot {
     id: root
@@ -39,8 +40,8 @@ ShellRoot {
     property bool holdVisible: false
     property string contextMessage: ""
     property bool contextError: false
-    property var theme: ({})
-    property int fontBase: 12
+    // The theme engine's body size (13 px by default) as the HUD's base of 12.
+    readonly property int fontBase: Math.max(1, Math.round(NyxTheme.typography.body.size * 12 / 13))
 
     readonly property bool showHud: hudEnabled && connected && approvalId.length > 0
 
@@ -53,14 +54,15 @@ ShellRoot {
     readonly property int fontName: Math.max(1, Math.round(fontBase * 13 / 12))
     readonly property int fontReply: Math.max(1, Math.round(fontBase * 14 / 12))
 
-    readonly property color cBg: theme.background || "#1e1e2e"
-    readonly property color cCard: theme.lighter_background || "#313244"
-    readonly property color cFg: theme.foreground || "#cdd6f4"
-    readonly property color cMuted: theme.dark_foreground || "#6c7086"
-    readonly property color cAccent: theme.accent || "#89b4fa"
-    readonly property color cRed: theme.red || "#f38ba8"
-    readonly property color cYellow: theme.yellow || "#f9e2af"
-    readonly property color cGreen: theme.green || "#a6e3a1"
+    // The system theme, from the Nyx theme engine (the Omarchy theme on Omarchy).
+    readonly property color cBg: NyxTheme.colors.surface.primary
+    readonly property color cCard: NyxTheme.colors.surface.tertiary
+    readonly property color cFg: NyxTheme.colors.text.primary
+    readonly property color cMuted: NyxTheme.colors.text.secondary
+    readonly property color cAccent: NyxTheme.colors.accent.primary
+    readonly property color cRed: NyxTheme.colors.status.error
+    readonly property color cYellow: NyxTheme.colors.status.warning
+    readonly property color cGreen: NyxTheme.colors.status.success
 
     readonly property color stateColor: daemonState === "listening" ? cRed
         : daemonState === "transcribing" ? cYellow
@@ -68,37 +70,6 @@ ShellRoot {
         : daemonState === "speaking" ? cGreen
         : daemonState === "error" || daemonState === "offline" ? cRed
         : cMuted
-
-    function parseTheme(text) {
-        const out = {};
-        const lines = (text || "").split("\n");
-        for (let i = 0; i < lines.length; i++) {
-            const m = lines[i].match(/^\s*([a-z_]+)\s*=\s*"([^"]+)"/);
-            if (m)
-                out[m[1]] = m[2];
-        }
-        return out;
-    }
-
-    function parseFontBase(text) {
-        const lines = (text || "").split("\n");
-        let inFont = false;
-        let n = 0;
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].replace(/#.*$/, "").trim();
-            const sec = line.match(/^\[([^\]]+)\]$/);
-            if (sec) {
-                inFont = sec[1] === "font";
-                continue;
-            }
-            if (!inFont)
-                continue;
-            const m = line.match(/^base-size\s*=\s*([0-9]+(?:\.[0-9]+)?)/);
-            if (m)
-                n = Math.round(Number(m[1]));
-        }
-        return n >= 1 ? n : 0;
-    }
 
     function meterFrac(rms) {
         const open = 0.004;
@@ -118,18 +89,6 @@ ShellRoot {
         root.contextMessage = String(message || "").substring(0, 240);
         root.contextError = error === true;
         contextTimer.restart();
-    }
-
-    function applyShellFonts() {
-        let user = 0;
-        let themeSz = 0;
-        try {
-            user = parseFontBase(userShell.text());
-        } catch (e) {}
-        try {
-            themeSz = parseFontBase(themeShell.text());
-        } catch (e) {}
-        root.fontBase = user || themeSz || 12;
     }
 
     function handleLine(line) {
@@ -249,47 +208,6 @@ ShellRoot {
     }
 
     Timer { id: contextTimer; interval: 4000; repeat: false; onTriggered: root.contextMessage = "" }
-
-    FileView {
-        id: themeFile
-        path: (Quickshell.env("HOME") || "") + "/.local/state/omarchy/current/theme/colors.toml"
-        watchChanges: true
-        printErrors: false
-        onLoaded: root.theme = root.parseTheme(text())
-        onLoadFailed: root.theme = ({})
-        onFileChanged: reload()
-    }
-
-    FileView {
-        id: themeShell
-        path: (Quickshell.env("HOME") || "") + "/.local/state/omarchy/current/theme/shell.toml"
-        watchChanges: true
-        printErrors: false
-        onLoaded: root.applyShellFonts()
-        onLoadFailed: root.applyShellFonts()
-        onFileChanged: reload()
-    }
-
-    FileView {
-        id: userShell
-        path: (Quickshell.env("HOME") || "") + "/.config/omarchy/shell.toml"
-        watchChanges: true
-        printErrors: false
-        onLoaded: root.applyShellFonts()
-        onLoadFailed: root.applyShellFonts()
-        onFileChanged: reload()
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: {
-            themeFile.reload()
-            themeShell.reload()
-            userShell.reload()
-        }
-    }
 
     Timer {
         id: hideTimer
