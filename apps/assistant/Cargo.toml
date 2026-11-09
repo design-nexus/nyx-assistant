@@ -12,7 +12,6 @@ members = [
     "crates/assistant-plugin-worker",
     "crates/assistant-policy",
     "crates/assistant-privileged",
-    "crates/assistant-asr",
     "crates/assistant-desktop",
     "crates/assistant-models",
     "crates/assistant-visual",
@@ -39,6 +38,8 @@ assistant-privileged = { path = "crates/assistant-privileged" }
 assistant-desktop = { path = "crates/assistant-desktop" }
 assistant-models = { path = "crates/assistant-models" }
 assistant-tools = { path = "crates/assistant-tools" }
+nyx-voice-engine = { git = "https://github.com/design-nexus/nyx-voice.git", rev = "0569d110825f8a5027833b7f97915556f8e0c5de" }
+nyx-voice-proto = { git = "https://github.com/design-nexus/nyx-voice.git", rev = "0569d110825f8a5027833b7f97915556f8e0c5de" }
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 crossterm = { version = "0.29", features = ["event-stream"] }
 dirs = "6"

@@ -2,6 +2,7 @@
 (io.github.design_nexus.nyx.Control) instead of through their windows. An app that isn't
 running is started first."""
 import json
+import shutil
 import subprocess
 import threading
 import time
@@ -190,11 +191,31 @@ def handle(name, args, cancelled):
         return show(name, args)
     bus, program = APPS[name.split('.', 1)[0]]
     ensure(bus, program, cancelled)
+    shared = through_ai_core(name, args, cancelled)
+    if shared is not None:
+        return shared
     path = '/' + bus.replace('.', '/')
     out = run(['busctl', '--user', '--json=short', 'call', bus, path, IFACE, 'Call', 'ss', name, json.dumps(args)], cancelled)
     reply = json.loads(json.loads(out)['data'][0])
     if 'error' in reply:
         raise ValueError(reply['error'])
     return reply['ok']
+
+def through_ai_core(name, args, cancelled):
+    """The call through Nyx AI Core's shared action registry, as Glimpse makes it: AI Core
+    checks the arguments against the app's schema and that an action which asks first was
+    approved (the Assistant's approval has already happened when a tool runs, hence
+    --yes); the app has the last word. None when AI Core isn't there or hasn't seen the
+    app yet (it looks every 10 s), and the app is called directly."""
+    if not shutil.which('nyx-ai'):
+        return None
+    try:
+        out = run(['nyx-ai', 'act', name, json.dumps(args), '--yes'], cancelled, timeout=60)
+    except ValueError as error:
+        message = str(error)
+        if 'no app offers' in message or "isn't running" in message or "isn't reachable" in message:
+            return None
+        raise
+    return json.loads(out)
 
 if __name__ == '__main__': Plugin('nyx-apps', request_tools(TOOLS), handle).run()

@@ -10,12 +10,6 @@ pub fn runtime_dir() -> PathBuf {
     xdg_runtime().join("nyx-assistant")
 }
 
-/// Isolated Voxtype runtime so the assistant's Parakeet daemon does not share F9's lock.
-/// Matches `XDG_RUNTIME_DIR` in `nyx-assistant-stt.service`.
-pub fn assistant_voxtype_runtime() -> PathBuf {
-    xdg_runtime().join("nyx-assistant-stt")
-}
-
 pub fn socket_path() -> PathBuf {
     runtime_dir().join("assistant.sock")
 }

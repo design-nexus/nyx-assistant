@@ -181,35 +181,17 @@ fn default_assistant_prompt() -> String {
         .into()
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
-pub struct SttCfg {
-    /// "streaming" (the Nemotron worker, which hears the echo-cancelled stream and gives
-    /// partial words) or "voxtype" (warm Parakeet, whole utterances). Streaming falls back to
-    /// Voxtype when its model or worker is missing.
-    pub provider: String,
-    pub voxtype_bin: String,
-    /// The streaming model's directory, or "auto" for the one `models fetch asr` installs.
-    pub model: String,
-    pub threads: u32,
-    /// "cpu" or "cuda". The int8 model is no faster on the GPU here (docs/BENCHMARKS.md).
-    pub device: String,
-}
+pub use nyx_voice_proto::settings::{AudioCfg, BargeInCfg, SttCfg, TtsCfg, VadCfg};
 
-impl SttCfg {
-    pub fn streaming(&self) -> bool {
-        self.provider == "streaming"
-    }
-}
-
-impl Default for SttCfg {
-    fn default() -> Self {
-        Self {
-            provider: "streaming".into(),
-            voxtype_bin: "voxtype".into(),
-            model: "auto".into(),
-            threads: 2,
-            device: "cpu".into(),
+impl Config {
+    /// The speech sections, for Nyx Voice's engine.
+    pub fn voice(&self) -> nyx_voice_proto::settings::Settings {
+        nyx_voice_proto::settings::Settings {
+            audio: self.audio.clone(),
+            vad: self.vad.clone(),
+            stt: self.stt.clone(),
+            tts: self.tts.clone(),
+            barge_in: self.barge_in.clone(),
         }
     }
 }
@@ -335,119 +317,6 @@ impl Default for LlmCfg {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
-pub struct TtsCfg {
-    pub provider: String,
-    pub voice: String,
-    /// Installed Kokoro voice applied to every persona while set.
-    pub voice_override: String,
-    pub speed: f32,
-    pub device: String,
-    pub variant: String,
-    pub threads: Option<usize>,
-    pub force_cuda: bool,
-}
-
-impl Default for TtsCfg {
-    fn default() -> Self {
-        Self {
-            provider: "kokoro".into(),
-            voice: "af_heart".into(),
-            voice_override: String::new(),
-            speed: 1.0,
-            device: "cuda".into(),
-            variant: "fp32".into(),
-            threads: None,
-            force_cuda: false,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
-pub struct VadCfg {
-    pub enabled: bool,
-    pub backend: String,
-    pub threshold: f32,
-    pub energy_threshold: f32,
-    pub hangover_ms: u64,
-    #[serde(default = "default_vad_confirm")]
-    pub start_confirm_frames: u32,
-    #[serde(default)]
-    pub model: String,
-    #[serde(default = "default_silero_url")]
-    pub url: String,
-}
-
-fn default_vad_confirm() -> u32 {
-    2
-}
-
-impl Default for VadCfg {
-    fn default() -> Self {
-        Self {
-            enabled: true,
-            backend: "silero".into(),
-            threshold: 0.5,
-            energy_threshold: 0.012,
-            hangover_ms: 400,
-            start_confirm_frames: 2,
-            model: String::new(),
-            url: default_silero_url(),
-        }
-    }
-}
-
-pub fn default_silero_url() -> String {
-    "https://github.com/snakers4/silero-vad/raw/master/src/silero_vad/data/silero_vad.onnx".into()
-}
-
-impl VadCfg {
-    pub fn wants_silero(&self) -> bool {
-        self.enabled && self.backend.trim().eq_ignore_ascii_case("silero")
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
-pub struct AudioCfg {
-    pub capture_rate: u32,
-    pub playback_rate: u32,
-    pub source: String,
-    pub sink: String,
-    pub duck_external: bool,
-    pub duck_gain: f32,
-}
-
-impl Default for AudioCfg {
-    fn default() -> Self {
-        Self {
-            capture_rate: 16_000,
-            playback_rate: 24_000,
-            source: "default".into(),
-            sink: "default".into(),
-            duck_external: true,
-            duck_gain: 0.35,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(default)]
-pub struct BargeInCfg {
-    pub enabled: bool,
-    pub grace_ms: u64,
-    pub threshold: f32,
-    pub hangover_ms: u64,
-    pub aec: bool,
-}
-
-impl Default for BargeInCfg {
-    fn default() -> Self {
-        Self { enabled: true, grace_ms: 500, threshold: 0.08, hangover_ms: 160, aec: true }
-    }
-}
 
 /// Listening while speaking: what an interruption does (needs `[stt] provider = "streaming"`
 /// and `[barge_in] aec`; otherwise any speech over a reply stops it, as before).
@@ -1179,7 +1048,7 @@ impl Config {
         if !["voxtype", "streaming"].contains(&self.stt.provider.as_str())
             || !["cpu", "cuda"].contains(&self.stt.device.as_str())
             || !(1..=16).contains(&self.stt.threads)
-            || self.llm.backend != "llama.cpp"
+            || !["llama.cpp", "nyx-ai"].contains(&self.llm.backend.as_str())
             || self.tts.provider != "kokoro"
         {
             return fail("unsupported provider");
@@ -1268,7 +1137,6 @@ impl Config {
         deferred!(tts, threads);
         deferred!(tts, force_cuda);
         deferred!(stt, provider);
-        deferred!(stt, voxtype_bin);
         deferred!(stt, model);
         deferred!(stt, threads);
         deferred!(stt, device);

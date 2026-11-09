@@ -3,15 +3,7 @@ name = "assistant-audio"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "PipeWire capture/playback and VAD for local voice assistant"
+description = "The Assistant's audio, from Nyx Voice's engine"
 
 [dependencies]
-anyhow.workspace = true
-assistant-core.workspace = true
-ort.workspace = true
-pipewire = "0.9"
-thiserror.workspace = true
-tokio.workspace = true
-tracing.workspace = true
-serde.workspace = true
-serde_json.workspace = true
+nyx-voice-engine.workspace = true

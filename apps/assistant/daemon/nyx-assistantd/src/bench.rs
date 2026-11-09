@@ -1681,7 +1681,7 @@ pub async fn tts() -> Result<()> {
     const RATE: u32 = 24_000;
     let cfg = assistant_core::Config::load()?;
     let started = Instant::now();
-    let tts = tokio::task::spawn_blocking(move || assistant_agent::KokoroProvider::load(&cfg)).await??;
+    let tts = tokio::task::spawn_blocking(move || assistant_agent::KokoroProvider::load(&cfg.voice())).await??;
     let load_s = started.elapsed().as_secs_f64();
     let voice = tts.voice();
     let out = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../benchmarks/trials/results");

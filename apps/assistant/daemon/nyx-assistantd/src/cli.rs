@@ -16,6 +16,7 @@ use std::io::{self, IsTerminal, Write};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    assistant_audio::paths::set_app("nyx-assistant", "Assistant");
     let mut args = std::env::args().skip(1);
     let cmd = args.next().unwrap_or_else(|| "help".into());
     match cmd.as_str() {
@@ -240,16 +241,6 @@ async fn main() -> anyhow::Result<()> {
                     tokio::time::sleep(std::time::Duration::from_millis(500)).await;
                 }
             }
-        }
-        "stt-daemon" => {
-            use std::os::unix::process::CommandExt;
-            let cfg = assistant_core::Config::load()?;
-            let err = std::process::Command::new(&cfg.stt.voxtype_bin)
-                .args(["-c"])
-                .arg(assistant_core::paths::config_dir().join("voxtype-parakeet.toml"))
-                .arg("daemon")
-                .exec();
-            return Err(err.into());
         }
         "ptt-start" => send_command(&Command::PttStart).await?,
         "ptt-stop" => send_command(&Command::PttStop).await?,
@@ -1163,29 +1154,15 @@ async fn bench_duplex(live: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Downloads the streaming speech model into the models folder (about 650 MB), through a
-/// temporary folder so an interrupted download never looks installed.
+/// Downloads the streaming speech model (about 650 MB) with Nyx Voice's engine, into the
+/// Assistant's models folder unless Nyx Voice already has it.
 fn fetch_asr_model() -> anyhow::Result<()> {
-    use assistant_core::asr::{ENCODER, MODEL_NAME, MODEL_URL};
-    let dir = assistant_core::paths::models_dir();
-    let target = dir.join(MODEL_NAME);
-    if target.join(ENCODER).is_file() {
-        println!("Already installed: {}", target.display());
+    if let Some(found) = assistant_agent::asr::installed_model() {
+        println!("Already installed: {}", found.display());
         return Ok(());
     }
-    std::fs::create_dir_all(&dir)?;
-    let tmp = tempfile::tempdir_in(&dir)?;
-    println!("Downloading {MODEL_NAME} (about 650 MB; NVIDIA Open Model License)…");
-    let archive = tmp.path().join("model.tar.bz2");
-    let ok =
-        std::process::Command::new("curl").args(["-fL", "--progress-bar", "-o"]).arg(&archive).arg(MODEL_URL).status()?.success();
-    anyhow::ensure!(ok, "the download failed");
-    let ok = std::process::Command::new("tar").arg("xjf").arg(&archive).arg("-C").arg(tmp.path()).status()?.success();
-    anyhow::ensure!(ok, "the archive could not be unpacked");
-    let unpacked = tmp.path().join(MODEL_NAME);
-    anyhow::ensure!(unpacked.join(ENCODER).is_file(), "the archive doesn't hold {MODEL_NAME}");
-    let _ = std::fs::remove_dir_all(unpacked.join("test_wavs"));
-    std::fs::rename(&unpacked, &target)?;
+    println!("Downloading the streaming speech model (about 650 MB; NVIDIA Open Model License)…");
+    let target = assistant_agent::asr::fetch_model()?;
     println!("Installed {}. Restart the assistant to use it.", target.display());
     Ok(())
 }

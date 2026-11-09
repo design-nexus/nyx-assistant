@@ -6,14 +6,14 @@ The process is `nyx-assistantd`. Custom personas can be configured via settings.
 Phase 1 milestone:
 
 ```
-hold Alt+Space → speak → warm Parakeet → (desktop command | local GGUF) → Kokoro → hear a reply
+hold Alt+Space → speak → Nyx Voice's streaming recognizer → (desktop command | the model in Nyx AI Core) → Kokoro → hear a reply
 ```
 
 Primary metric: time from finishing a sentence to hearing the first word back.
 
 ## Status
 
-Spoken loop is up: Alt+Space PTT, warm Parakeet STT (F9 stays Whisper), llama.cpp
+Spoken loop is up: Alt+Space PTT, Nyx Voice's streaming recognizer (F9 stays Omarchy's), Nyx AI Core
 CUDA GGUF, Kokoro (CPU on Blackwell), desktop router, `apps.toml`, barge-in, and
 a Quickshell HUD that follows the Omarchy theme and font.
 
@@ -41,9 +41,9 @@ See [settings, MCP, diagnostics and installation](docs/REVIEWED-IMPROVEMENTS.md)
 ```
 crates/     replaceable STT / TTS / inference / audio
 daemon/     nyx-assistantd + nyx-assistant CLI
-config/     shipped config.toml, apps.toml, commands.toml, voxtype-parakeet.toml
+config/     shipped config.toml, apps.toml, commands.toml
 quickshell/ standalone Assistant HUD
-systemd/    assistantd, HUD, Parakeet STT user units
+systemd/    assistantd, HUD and Aura user units
 scripts/    install, Hyprland bind snippet, HUD launcher
 docs/
 ```

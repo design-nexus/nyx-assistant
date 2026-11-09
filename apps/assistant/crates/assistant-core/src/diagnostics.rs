@@ -4,7 +4,7 @@ use std::time::Duration;
 pub async fn collect() -> Value {
     let config = crate::Config::load();
     let dependencies: Vec<Value> = [
-        "voxtype",
+        "nyx-voice-asr",
         "wpctl",
         "systemctl",
         "hyprctl",

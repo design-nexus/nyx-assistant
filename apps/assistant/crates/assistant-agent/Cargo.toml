@@ -14,7 +14,7 @@ hound.workspace = true
 tempfile.workspace = true
 libc = "0.2"
 serde_json.workspace = true
-loqui = { version = "0.3.0", features = ["cuda"] }
+nyx-voice-engine.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true

@@ -12,8 +12,8 @@ with a Unix socket for the HUD and Hyprland.
 hold Alt+Space
   → PipeWire capture (16 kHz S16 mono)
   → key-up ends the take (energy VAD is levels / barge-in only)
-  → warm Parakeet via isolated Voxtype daemon (nyx-assistant-stt.service)
-  → high-confidence router (desktop) or resident GGUF (llama.cpp CUDA)
+  → streaming Nemotron (Nyx Voice's `nyx-voice-asr` worker, partial words while you talk)
+  → high-confidence router (desktop) or the language model in Nyx AI Core
   → phrase chunker
   → Kokoro ONNX (CPU on Blackwell; CUDA skipped, no sm_120 ORT kernels)
   → PipeWire playback (24 kHz F32 mono)
@@ -26,9 +26,9 @@ Primary metric: **user speech end → first audible response word**.
 | Crate | Role |
 |---|---|
 | `assistant-core` | config, `apps.toml`, `commands.toml`, state machine, events, timing, XDG paths |
-| `assistant-audio` | PipeWire capture/playback, energy VAD, playback cancel |
-| `assistant-inference` | `LlamaCppBackend` — in-process llama.cpp CUDA |
-| `assistant-agent` | Voxtype STT, Kokoro TTS, phrase chunker, desktop router |
+| `assistant-audio` | Nyx Voice's engine, linked in: PipeWire capture/playback, echo cancelling, VAD, playback cancel |
+| `assistant-inference` | the language model in Nyx AI Core (`nyx-ai-client`): interactive turns, grammars, images |
+| `assistant-agent` | speech (Nyx Voice's recognizer and Kokoro), phrase chunker, desktop router |
 | `assistant-ipc` | Unix NDJSON socket |
 | `assistant-tools` | tool registry (the enforcement point), plugins, MCP, terminal jobs |
 | `assistant-policy` | permission decisions, grants, autonomy modes, the audit journal |
@@ -53,29 +53,30 @@ Commands: `ptt_start`, `ptt_stop`, `cancel`, `status`, `shutdown`, `say` (skip S
 
 Events: `state`, `partial_transcript`, `transcript`, `assistant_text`, `level`, `timing`, `error`, `health`.
 
-No localhost HTTP between our components. llama.cpp is in-process. Voxtype is a local subprocess.
+No localhost HTTP between our components. The language model is in Nyx AI Core (its socket); speech is Nyx Voice's engine in this process, with the recognizer in its own worker.
 
 ## Library decisions
 
 | Layer | Choice | Fallback |
 |---|---|---|
-| LLM | `llama-cpp-2` 0.1.158, feature `cuda` | persistent `llama-server` on a unix socket |
+| LLM | Nyx AI Core (shared llama.cpp), `[llm] model` or AI Core's `assistant` default | none: without AI Core the Assistant says it can't think right now |
 | TTS | `loqui` 0.3.0 Kokoro ONNX, feature `cuda` | skip CUDA on compute 12.* (or `kokoro-cuda-skip` stamp); else probe then CPU if infer fails / `libcudnn.so` is missing |
 | Audio | official `pipewire` 0.9 | `cpal` via PipeWire |
 | VAD | Silero VAD v5 ONNX CPU (sharing `ort` with Kokoro) | energy/RMS fallback |
-| STT | warm Parakeet (`nyx-assistant-stt.service`, `voxtype-onnx-avx2`) | cold `transcribe --engine parakeet` if the daemon take is empty |
+| STT | Nyx Voice's streaming Nemotron worker (`nyx-voice-asr`) | none: a missing model says `nyx-voice models fetch asr` |
 
 Blackwell (RTX 5080, sm_120): use `CMAKE_CUDA_ARCHITECTURES=120a-real` in the local `build.env` override.
 
-## Voxtype boundary
+## Nyx Voice and Nyx AI Core
 
-F9 dictation keeps the stock Whisper daemon (`/usr/bin/voxtype`, `~/.config/voxtype`).
-Assistant STT is a second, isolated Parakeet daemon (`nyx-assistant-stt.service`,
-`XDG_RUNTIME_DIR=…/nyx-assistant-stt`, config `~/.config/nyx-assistant/voxtype-parakeet.toml`).
+Speech is Nyx Voice's (design-nexus/nyx-voice): this daemon links its engine so barge-in
+and listening while speaking keep their latency, and other apps use `nyx-voiced`. VoxType
+isn't used. The language model is Nyx AI Core's, shared with Chat, Glimpse and Notes;
+the Assistant's turns are interactive priority.
 
-- PTT uses `record start --no-osd --file` against that warm daemon.
-- We do not change `~/.config/voxtype/config.toml` or the F9 binds.
-- We do not steal F9 / Super+Ctrl+X.
+- The Assistant's folders and PipeWire names (`Assistant`, `assistant-echo-cancel`) are
+  unchanged.
+- We do not change Omarchy's F9 dictation or its binds.
 
 ## Desktop commands
 

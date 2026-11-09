@@ -68,17 +68,18 @@ pub async fn run(cfg: Config) -> Result<()> {
     let Ipc { mut commands, command_tx, events } = ipc;
     let audio = tokio::task::spawn_blocking({
         let cfg = cfg.clone();
-        move || AudioEngine::start(&cfg)
+        move || AudioEngine::start(&cfg.voice())
     })
     .await??;
-    let stt = assistant_agent::asr::Stt::new(&cfg).await;
+    let stt = assistant_agent::asr::Stt::new(&cfg.voice()).await;
     let power = PowerSettings::load();
     let llm = LlamaCppBackend::spawn_with_battery(&cfg, power.profile == "battery").context("llama.cpp")?;
     let tts = tokio::task::spawn_blocking({
         let cfg = cfg.clone();
-        move || KokoroProvider::load(&cfg)
+        move || KokoroProvider::load(&cfg.voice())
     })
     .await??;
+    tts.configure(&cfg.tts, assistant_agent::clone_reference(&cfg))?;
 
     let samples = audio.take_samples().context("capture channel")?;
     let aec_samples = audio.take_aec_samples();
@@ -547,7 +548,7 @@ impl App {
                 plugins.change("reload", &id, &next).await?;
             }
         }
-        self.tts.configure(&next)?;
+        self.tts.configure(&next.tts, assistant_agent::clone_reference(&next))?;
         // A preset (or an edit) may have changed when the models unload.
         *self.power.lock().unwrap() = PowerSettings::load();
         *self.apps.lock().await = apps;
