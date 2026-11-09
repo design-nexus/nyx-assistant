@@ -13,8 +13,8 @@ Primary metric: time from finishing a sentence to hearing the first word back.
 
 ## Status
 
-Spoken loop is up: Alt+Space PTT, Nyx Voice's streaming recognizer (F9 stays Omarchy's), Nyx AI Core
-CUDA GGUF, Kokoro (CPU on Blackwell), desktop router, `apps.toml`, barge-in, and
+Spoken loop is up: Alt+Space PTT, Nyx Voice's streaming recognizer (F9 stays Omarchy's), the language
+model in Nyx AI Core, Kokoro (CPU on Blackwell), desktop router, `apps.toml`, barge-in, and
 a Quickshell HUD that follows the Omarchy theme and font.
 
 See `docs/ARCHITECTURE.md`, `docs/SETUP.md`, `docs/BENCHMARKS.md`.
