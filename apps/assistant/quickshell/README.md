@@ -27,3 +27,21 @@ HUD enablement follows `settings.hud_enabled`; tool approvals show exact JSON ar
 
 
 The HUD shows conversation/follow-up countdowns, dictation targets and retained drafts, and tool progress. Follow-up and dictation capture release keyboard focus so you can keep using the selected app. Approval prompts show exact arguments and accept Y/N or spoken approve/deny. Browser challenges can be handled with `nyx-assistant browser-takeover`, followed by `browser-resume`.
+
+## Aura (`Aura/Main.qml`)
+
+The Aura as a component of Nyx Shell's Quickshell runtime (`nyx-shell-qs`), for NyxOS: a
+Shell Core `presentation` overlay on the screens `[ui] aura_monitor_mode` names, never
+taking input, hidden while the session is locked or over fullscreen windows. It draws
+Full Aura or Edge Flow (`[ui] aura_style`), faint while idle or only while busy
+(`[ui] aura_visibility`), and stays still under reduced motion. It reads the daemon's
+events from `nyx-assistant listen` and draws only when `[ui] aura_renderer =
+"quickshell"`; with `gtk` (the default) `nyx-assistant-visual` draws it, as before.
+Canvas stays in `nyx-assistant-visual` either way.
+
+States: `idle`, `activating` (waiting for Nyx AI Core to load the model), `listening`,
+`transcribing`, `thinking`, `executing`, `speaking`, `error`, `unavailable` (Nyx AI Core
+can't be reached); an approval waiting shows as attention.
+
+Test on a virtual output: `NYX_AURA_TEST_STATE=listening NYX_AURA_TEST_STYLE=edge-flow`
+fixes the state and style without the daemon.

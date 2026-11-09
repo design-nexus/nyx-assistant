@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "lowercase")]
 pub enum AssistantState {
     Idle,
+    /// A turn is waiting for its language model to load (or for its turn) in Nyx AI Core.
+    Activating,
     Listening,
     Transcribing,
     Thinking,
@@ -11,12 +13,15 @@ pub enum AssistantState {
     Speaking,
     Interrupted,
     Error,
+    /// A turn couldn't reach Nyx AI Core: the Assistant can't think until it's back.
+    Unavailable,
 }
 
 impl AssistantState {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Idle => "idle",
+            Self::Activating => "activating",
             Self::Listening => "listening",
             Self::Transcribing => "transcribing",
             Self::Thinking => "thinking",
@@ -24,6 +29,7 @@ impl AssistantState {
             Self::Speaking => "speaking",
             Self::Interrupted => "interrupted",
             Self::Error => "error",
+            Self::Unavailable => "unavailable",
         }
     }
 }
@@ -124,7 +130,7 @@ impl Activity {
     pub fn follow(&mut self, state: AssistantState) {
         let busy = |b| if b { Busy::Busy } else { Busy::Idle };
         match state {
-            AssistantState::Idle | AssistantState::Error | AssistantState::Interrupted => {
+            AssistantState::Idle | AssistantState::Error | AssistantState::Interrupted | AssistantState::Unavailable => {
                 self.mic = Mic::Off;
                 self.recognition = Recognition::Idle;
                 self.reasoning = Busy::Idle;
@@ -140,7 +146,7 @@ impl Activity {
                 self.mic = Mic::Off;
                 self.recognition = Recognition::Finalizing;
             }
-            AssistantState::Thinking => {
+            AssistantState::Thinking | AssistantState::Activating => {
                 self.recognition = Recognition::Idle;
                 self.reasoning = busy(true);
             }

@@ -33,6 +33,8 @@ pub struct LanguageModel {
     loaded: Arc<AtomicBool>,
     battery: AtomicBool,
     mmproj: Option<PathBuf>,
+    /// True while a turn waits for AI Core to queue or load the model.
+    waiting: Arc<tokio::sync::watch::Sender<bool>>,
 }
 
 /// What AI Core's errors mean for someone talking to the Assistant.
@@ -69,6 +71,7 @@ impl LanguageModel {
             loaded: Arc::new(AtomicBool::new(false)),
             battery: AtomicBool::new(battery_mode),
             mmproj,
+            waiting: Arc::new(tokio::sync::watch::channel(false).0),
         })
     }
 
@@ -137,6 +140,16 @@ impl LanguageModel {
     /// The configured model file, or `nyx-ai:assistant` for AI Core's default.
     pub fn model_path(&self) -> &std::path::Path {
         self.file.as_deref().unwrap_or(std::path::Path::new("nyx-ai:assistant"))
+    }
+
+    /// Whether a turn is waiting for AI Core to load or queue the model.
+    pub fn waiting(&self) -> tokio::sync::watch::Receiver<bool> {
+        self.waiting.subscribe()
+    }
+
+    /// Whether Nyx AI Core's socket is there.
+    pub fn available(&self) -> bool {
+        self.client.available()
     }
 
     pub fn is_loaded(&self) -> bool {
@@ -233,6 +246,7 @@ impl LanguageModel {
         let mut stream = self.client.chat(request).await.map_err(explain)?;
         let (tx, rx) = mpsc::channel(64);
         let loaded = self.loaded.clone();
+        let waiting = self.waiting.clone();
         tokio::spawn(async move {
             loop {
                 if cancel.load(Ordering::Relaxed) {
@@ -245,8 +259,15 @@ impl LanguageModel {
                 };
                 match item {
                     None => break,
-                    Some(Ok(Item::Event(Event::Started))) => loaded.store(true, Ordering::Relaxed),
+                    Some(Ok(Item::Event(Event::Queued { .. } | Event::ModelLoading { .. }))) => {
+                        waiting.send_replace(true);
+                    }
+                    Some(Ok(Item::Event(Event::Started))) => {
+                        waiting.send_replace(false);
+                        loaded.store(true, Ordering::Relaxed);
+                    }
                     Some(Ok(Item::Event(Event::Delta { content, .. }))) if !content.is_empty() => {
+                        waiting.send_replace(false);
                         loaded.store(true, Ordering::Relaxed);
                         if tx.send(Ok(content)).await.is_err() {
                             let _ = stream.cancel().await;
@@ -263,6 +284,7 @@ impl LanguageModel {
                     }
                 }
             }
+            waiting.send_replace(false);
         });
         Ok(rx)
     }

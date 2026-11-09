@@ -614,6 +614,9 @@ pub struct UiCfg {
     pub aura_monitor_mode: String,
     pub aura_primary_monitor: String,
     pub aura_monitors: Vec<String>,
+    /// Who draws the Aura: `gtk` (nyx-assistant-visual) or `quickshell` (the Aura
+    /// component in Nyx Shell's runtime, on NyxOS). Canvas stays in nyx-assistant-visual.
+    pub aura_renderer: String,
     pub canvas_enabled: bool,
 }
 
@@ -634,6 +637,7 @@ impl Default for UiCfg {
             aura_monitor_mode: "active".into(),
             aura_primary_monitor: String::new(),
             aura_monitors: Vec::new(),
+            aura_renderer: "gtk".into(),
             canvas_enabled: true,
         }
     }
@@ -970,7 +974,8 @@ impl Config {
     pub fn validate(&self) -> crate::Result<()> {
         if !(1..=3650).contains(&self.privacy.retention_days) || !(16..=16384).contains(&self.privacy.backup_limit_mb) { return Err(crate::Error::msg("invalid privacy retention limits")); }
         let fail = |s: &str| Err(crate::Error::msg(s));
-        if !["full", "edge-flow"].contains(&self.ui.aura_style.as_str())
+        if !["gtk", "quickshell"].contains(&self.ui.aura_renderer.as_str())
+            || !["full", "edge-flow"].contains(&self.ui.aura_style.as_str())
             || !["activity", "persistent"].contains(&self.ui.aura_visibility.as_str())
             || !(0.0..=1.0).contains(&self.ui.aura_intensity)
             || !(1.0..=24.0).contains(&self.ui.aura_thickness)

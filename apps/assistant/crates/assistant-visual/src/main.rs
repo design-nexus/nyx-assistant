@@ -317,7 +317,7 @@ impl Aura {
 
     fn visible(&self) -> bool {
         let cfg = self.cfg.borrow();
-        cfg.enabled && cfg.aura_enabled
+        cfg.enabled && cfg.aura_enabled && cfg.aura_renderer != "quickshell"
             && (self.state.get() != State::Idle || (cfg.aura_visibility == "persistent" && self.conversation.get()))
     }
 
@@ -1334,9 +1334,9 @@ fn handle_event(event: Value, aura: &Rc<Aura>, canvas: &Canvas, app: &gtk::Appli
             if at>0 {aura.last_state_ms.set(at);}
             let state = match event["state"].as_str().unwrap_or("") {
                 "listening" | "transcribing" => State::Listening,
-                "thinking" | "executing" => State::Thinking,
+                "thinking" | "executing" | "activating" => State::Thinking,
                 "speaking" => State::Speaking,
-                "error" => State::Error,
+                "error" | "unavailable" => State::Error,
                 _ => State::Idle,
             };
             aura.set_state(state);

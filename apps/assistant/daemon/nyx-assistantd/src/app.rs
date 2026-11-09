@@ -161,6 +161,7 @@ pub async fn run(cfg: Config) -> Result<()> {
 
     app.emit_state(AssistantState::Idle).await;
     app.emit_health();
+    app.watch_model_loading();
     {
         // screen.look asks the resident model, with its image projector loaded on demand.
         let weak = Arc::downgrade(&app);
@@ -757,6 +758,29 @@ impl App {
             "note":"Measured controls are backend-specific. Apply suggestions explicitly."}))
     }
 
+    /// After a failed turn: `unavailable` when Nyx AI Core can't be reached, else `error`.
+    fn failure_state(&self) -> AssistantState {
+        if self.llm.available() { AssistantState::Error } else { AssistantState::Unavailable }
+    }
+
+    /// While a turn waits for AI Core to load or queue the model, the state says
+    /// `activating` instead of `thinking`.
+    pub(super) fn watch_model_loading(self: &Arc<Self>) {
+        let app = Arc::clone(self);
+        let mut waiting = self.llm.waiting();
+        tokio::spawn(async move {
+            while waiting.changed().await.is_ok() {
+                let now = *waiting.borrow();
+                let current = app.state.lock().await.current();
+                match (now, current) {
+                    (true, AssistantState::Thinking) => app.emit_state(AssistantState::Activating).await,
+                    (false, AssistantState::Activating) => app.emit_state(AssistantState::Thinking).await,
+                    _ => {}
+                }
+            }
+        });
+    }
+
     async fn emit_state(&self, next: AssistantState) {
         if TURN_ID.try_with(|id| *id != self.turn_gen.load(Ordering::SeqCst)).unwrap_or(false) {
             return;
@@ -860,7 +884,7 @@ impl App {
             if let Err(err) = app.respond(&text, timing).await {
                 tracing::error!(%err, "say failed");
                 app.emit(Event::Error { message: err.to_string() });
-                app.emit_state(AssistantState::Error).await;
+                app.emit_state(app.failure_state()).await;
                 app.emit_state(AssistantState::Idle).await;
             }
             app.finish_turn(gen);
@@ -956,7 +980,7 @@ impl App {
             if let Err(err) = app.speak_reply(&text, TurnTiming::new()).await {
                 tracing::error!(%err, "speak failed");
                 app.emit(Event::Error { message: err.to_string() });
-                app.emit_state(AssistantState::Error).await;
+                app.emit_state(app.failure_state()).await;
                 app.emit_state(AssistantState::Idle).await;
             }
             app.finish_turn(gen);
@@ -975,7 +999,7 @@ impl App {
             if let Err(err) = app.run_demo().await {
                 tracing::error!(%err, "demo failed");
                 app.emit(Event::Error { message: err.to_string() });
-                app.emit_state(AssistantState::Error).await;
+                app.emit_state(app.failure_state()).await;
                 app.emit_state(AssistantState::Idle).await;
             }
             app.finish_turn(gen);
@@ -1072,7 +1096,7 @@ impl App {
             if let Err(err) = app.run_turn(armed_tx).await {
                 tracing::error!(%err, "turn failed");
                 app.emit(Event::Error { message: err.to_string() });
-                app.emit_state(AssistantState::Error).await;
+                app.emit_state(app.failure_state()).await;
                 app.emit_state(AssistantState::Idle).await;
             }
             app.need_keyup.store(true, Ordering::SeqCst);
