@@ -101,7 +101,7 @@ if [[ $("$helper" --version 2>/dev/null || echo 0) -lt $want ]] || ! cmp -s "$po
   fi
 fi
 systemctl --user daemon-reload
-systemctl --user enable nyx-assistant-visual.service
+systemctl --user reenable nyx-assistant-visual.service nyx-assistant-hud.service
 # Preserve existing service enablement during migration.
 # Existing daemon enablement is retained.
 if [[ $start_after == 1 ]]; then systemctl --user restart nyx-assistantd.service; fi

@@ -2,6 +2,8 @@
 Description=Assistant Aura and Canvas
 After=graphical-session.target nyx-assistantd.service
 PartOf=graphical-session.target nyx-assistantd.service
+# nyx-assistantd starts at login, before Wayland; the overlay needs a display.
+ConditionEnvironment=WAYLAND_DISPLAY
 
 [Service]
 Type=simple
@@ -11,4 +13,4 @@ RestartSec=2
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
 
 [Install]
-WantedBy=nyx-assistantd.service
+WantedBy=graphical-session.target
