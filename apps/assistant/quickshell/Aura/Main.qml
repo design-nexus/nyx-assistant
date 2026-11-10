@@ -27,6 +27,8 @@ Scope {
     property bool conversation: false
     property bool attention: false
     property real level: 0
+    // Waits longer between tries while the daemon stays off.
+    property int retryMs: 2000
     property var ui: ({ enabled: true, aura_enabled: true, aura_style: "full", aura_visibility: "persistent", aura_intensity: 0.4, aura_thickness: 3, aura_speed: 1, aura_segment_length: 0.14, aura_audio_reactive: true, aura_reduce_motion: "system", aura_monitor_mode: "active", aura_primary_monitor: "", aura_monitors: [], aura_renderer: "gtk" })
 
     readonly property string bin: (Quickshell.env("HOME") || "") + "/.local/bin/nyx-assistant"
@@ -154,12 +156,17 @@ Scope {
         running: root.testState === ""
         stdout: SplitParser {
             splitMarker: "\n"
-            onRead: data => root.handle(data)
+            onRead: data => {
+                root.retryMs = 2000;
+                root.handle(data);
+            }
         }
         onRunningChanged: {
             if (!running && root.testState === "") {
                 root.state = "offline";
                 root.level = 0;
+                restart.interval = root.retryMs;
+                root.retryMs = Math.min(root.retryMs * 2, 30000);
                 restart.restart();
             } else {
                 snapshot.running = true;

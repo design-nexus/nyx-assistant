@@ -197,6 +197,11 @@ Store, look for an image editor"**, **"In Tasks, what's using the most memory"**
 Torrents, pause everything"**. Settings and Store only look and show; Tasks only reports.
 Extracting, packing, sending a chat, installing a font and adding a torrent ask first.
 
+Actions other apps offer through Nyx AI Core's shared registry, beyond the tools above,
+are reached with `actions.list` (what's on offer, with each action's arguments) and
+`actions.run` (one of them by name). `actions.run` always asks first, showing the action
+and its arguments; that approval is what an action that needs confirming gets.
+
 ## Passwords
 
 The `passwords` ability finds logins in Nyx Passwords and copies one to the clipboard.

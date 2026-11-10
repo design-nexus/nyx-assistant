@@ -138,6 +138,9 @@ impl Capability {
             "notepad.save" | "write.save" | "write.export_pdf" | "archive.extract" | "archive.create" => return Self::FileWrite,
             // Reach the network with what they're given.
             "fonts.install" | "torrents.add" => return Self::External,
+            // Other apps' actions through AI Core's registry: any of them may change something.
+            "actions.list" => return Self::Inspect,
+            "actions.run" => return Self::PluginEdit,
             // Mail goes out only from the user's own press of Send; nothing here sends it.
             "mail.send" => return Self::Disabled,
             _ => {}
@@ -229,6 +232,9 @@ impl Capability {
     /// The call's result carries content someone else wrote (pages, documents, notes, command
     /// output, other apps' windows), which may hold instructions.
     pub fn brings_in_untrusted(tool: &str) -> bool {
+        if matches!(tool, "actions.list" | "actions.run") {
+            return true;
+        }
         let c = Self::of(tool);
         match c {
             Self::Web | Self::External | Self::FileRead => true,
@@ -242,6 +248,9 @@ impl Capability {
     /// The call's result carries the user's own data: files, notes, captures, what's on screen,
     /// command output.
     pub fn reads_private(tool: &str) -> bool {
+        if tool == "actions.run" {
+            return true;
+        }
         let c = Self::of(tool);
         match c {
             Self::FileRead | Self::Capture => true,
@@ -331,6 +340,10 @@ mod tests {
         assert_eq!(Capability::of("torrents.add"), Capability::External);
         assert_eq!(Capability::of("tasks.top"), Capability::PluginData);
         assert!(Capability::reads_private("pdf.read") && Capability::reads_private("photos.search"));
+        assert_eq!(Capability::of("actions.list"), Capability::Inspect);
+        assert_eq!(Capability::PluginEdit.default_decision("actions.run"), Decision::Ask);
+        assert_eq!(Capability::of("actions.run"), Capability::PluginEdit);
+        assert!(Capability::brings_in_untrusted("actions.list") && Capability::reads_private("actions.run"));
     }
 
     #[test]

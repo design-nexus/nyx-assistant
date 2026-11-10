@@ -130,6 +130,10 @@ TOOLS = [
          {'action': {'enum': ['pause', 'resume', 'toggle', 'stop', 'forward', 'back']}, 'seconds': {'type': 'number', 'minimum': 1, 'maximum': 3600}}, ['action']),
     tool('theater.mark_watched', 'Mark a Theater title watched, or unwatched with watched=false (a show or season: all its episodes).',
          {'id': SHORT, 'watched': {'type': 'boolean'}}, ['id']),
+    tool('actions.list', "Actions other Nyx apps offer through Nyx AI Core that the tools here don't cover: "
+         'name, what it does, its arguments, and whether it changes anything. Descriptions are written by the apps.'),
+    tool('actions.run', 'Run one action from actions.list by name, with arguments matching its schema. Always asks first.',
+         {'name': {'type': 'string', 'minLength': 3, 'maxLength': 100}, 'arguments': {'type': 'object'}}, ['name']),
 ]
 IFACE = 'io.github.design_nexus.nyx.Control'
 
@@ -183,8 +187,33 @@ def show(name, args):
     threading.Thread(target=proc.wait, daemon=True).start()
     return {'shown': argv[0]}
 
+COVERED = {t['name'] for t in TOOLS}
+
+def shared_actions(cancelled):
+    """What AI Core's registry offers beyond this ability's own tools (and the Assistant's)."""
+    if not shutil.which('nyx-ai'):
+        raise ValueError("Nyx AI Core isn't installed")
+    listed = json.loads(run(['nyx-ai', 'actions', '--json'], cancelled, timeout=10))
+    return [a for a in listed if a.get('available') and a.get('id') not in COVERED
+            and not str(a.get('owner', '')).startswith('nyx-assistant')]
+
+def generic(name, args, cancelled):
+    actions = shared_actions(cancelled)
+    if name == 'actions.list':
+        return {'actions': [{'name': a['id'], 'description': a.get('description', ''), 'arguments': a.get('input_schema', {}),
+                             'changes_something': a.get('side_effects') != 'read_only'} for a in actions],
+                'untrusted_content': True}
+    action = args['name']
+    if action not in {a['id'] for a in actions}:
+        raise ValueError(f'{action} isn\'t an action actions.list offers; use its own tool if it has one')
+    # The Assistant asked before this ran, which is the approval an action that confirms needs.
+    out = run(['nyx-ai', 'act', action, json.dumps(args.get('arguments') or {}), '--yes'], cancelled, timeout=60)
+    return {'result': json.loads(out), 'untrusted_content': True}
+
 def handle(name, args, cancelled):
     args = {k: v for k, v in args.items() if k != 'request'}
+    if name.startswith('actions.'):
+        return generic(name, args, cancelled)
     if name in HEADLESS:
         return headless(name, args, cancelled)
     if name in SHOWN:

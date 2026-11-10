@@ -182,6 +182,7 @@ pub fn describe(tool: &str, args: &Value) -> String {
         "chat.send" => format!("Send “{}” in Chat", clip(s(args, "text"), 60)),
         "fonts.install" => format!("Download and install the font {}", clip(s(args, "family"), 60)),
         "torrents.add" => format!("Add the torrent {}", clip(s(args, "link"), 70)),
+        "actions.run" => format!("Run {} with {}", clip(s(args, "name"), 60), clip(&args["arguments"].to_string(), 80)),
         "notes.edit" => "Change a note".into(),
         "notes.delete" => "Delete a note".into(),
         "browser.navigate" | "web.read" => format!("Open {}", clip(s(args, "url"), 80)),
