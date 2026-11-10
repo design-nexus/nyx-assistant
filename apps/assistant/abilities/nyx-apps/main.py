@@ -223,6 +223,15 @@ def handle(name, args, cancelled):
     shared = through_ai_core(name, args, cancelled)
     if shared is not None:
         return shared
+    return direct(bus, name, args, cancelled)
+
+def direct(bus, name, args, cancelled):
+    """The app's control interface without AI Core. Through nyx-actions, a Nyx program the
+    app lets past read-only actions (busctl isn't one: apps on control API 2 give it
+    read-only actions only). The Assistant's approval has happened, hence --yes."""
+    if shutil.which('nyx-actions'):
+        out = run(['nyx-actions', 'call', name, json.dumps(args), '--yes'], cancelled, timeout=60)
+        return json.loads(out)['ok']
     path = '/' + bus.replace('.', '/')
     out = run(['busctl', '--user', '--json=short', 'call', bus, path, IFACE, 'Call', 'ss', name, json.dumps(args)], cancelled)
     reply = json.loads(json.loads(out)['data'][0])
