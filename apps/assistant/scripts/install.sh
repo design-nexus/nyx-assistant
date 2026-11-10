@@ -66,6 +66,12 @@ mv "$bin_dir/nyx-assistant-node.new" "$bin_dir/nyx-assistant-node"
 "$bin_dir/nyx-assistant" plugins migrate "$root"
 mkdir -p "$data_dir/quickshell"
 cp -a "$root/quickshell/." "$data_dir/quickshell/"
+# The Quickshell Aura joins Nyx Shell's runtime where that is installed; it draws only
+# with `[ui] aura_renderer = "quickshell"`.
+if [[ -d "$HOME/.local/share/nyx-shell/qml" ]]; then
+  mkdir -p "$HOME/.local/share/nyx-shell/components"
+  ln -sfn "$data_dir/quickshell/Aura" "$HOME/.local/share/nyx-shell/components/nyx-assistant-aura"
+fi
 # Speech runs in Nyx Voice's engine now; VoxType's recognizer unit and the old worker go.
 systemctl --user disable --now nyx-assistant-stt.service 2>/dev/null || true
 rm -f "$unit_dir/nyx-assistant-stt.service" "$unit_dir/nyx-assistant-stt-failed.service" "$bin_dir/nyx-assistant-asr" "$cfg_dir/voxtype-parakeet.toml"
