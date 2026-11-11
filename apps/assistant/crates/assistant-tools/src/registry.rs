@@ -791,14 +791,13 @@ fn dirs_home() -> String {
     std::env::var("HOME").unwrap_or_else(|_| ".".into())
 }
 async fn open_job(id: &str) -> Result<()> {
-    let cmd = assistant_omarchy::shell_join(&[
-        "omarchy-launch-terminal",
-        "--",
-        "nyx-assistant",
-        "jobs",
-        "follow",
-        id,
-    ]);
+    let term = assistant_omarchy::terminal("omarchy-launch-terminal");
+    let mut argv = vec![term.as_str()];
+    if term != "xdg-terminal-exec" {
+        argv.push("--");
+    }
+    argv.extend(["nyx-assistant", "jobs", "follow", id]);
+    let cmd = assistant_omarchy::shell_join(&argv);
     assistant_omarchy::hypr_exec(&cmd).await?;
     Ok(())
 }

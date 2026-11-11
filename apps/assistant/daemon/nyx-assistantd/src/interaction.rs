@@ -920,11 +920,17 @@ impl App {
         }
         for notice in crate::app::proactive::spooled() { self.proactive.submit(notice); }
         if !self.proactive.has_pending() { return; }
+        // Do Not Disturb: the Omarchy shell's, or nyx-notifyd's (NyxOS), which answers "b true".
+        let (program, args): (&str, &[&str]) = if assistant_omarchy::on_path("omarchy-shell") {
+            ("omarchy-shell", &["notifications", "isDnd"])
+        } else {
+            ("busctl", &["--user", "call", "io.github.design_nexus.nyx.Notifications", "/io/github/design_nexus/nyx/Notifications", "io.github.design_nexus.nyx.Notifications1", "Dnd"])
+        };
         let dnd = tokio::time::timeout(
             Duration::from_secs(1),
-            tokio::process::Command::new("omarchy-shell").args(["notifications", "isDnd"]).kill_on_drop(true).output(),
+            tokio::process::Command::new(program).args(args).kill_on_drop(true).output(),
         ).await;
-        let quiet_hours = matches!(dnd,Ok(Ok(ref output)) if output.status.success() && String::from_utf8_lossy(&output.stdout).trim()=="on");
+        let quiet_hours = matches!(dnd,Ok(Ok(ref output)) if output.status.success() && matches!(String::from_utf8_lossy(&output.stdout).trim(), "on" | "b true"));
         for _ in 0..8 {
             let Some((notice, preference, suppressed)) = self.proactive.next(&self.cfg().events, self.muted.load(Ordering::SeqCst) || quiet_hours) else { break };
             if suppressed {

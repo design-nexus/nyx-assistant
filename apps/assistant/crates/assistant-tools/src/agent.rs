@@ -105,12 +105,14 @@ pub fn agent_args(id: &str, prompt: &str) -> Vec<String> {
 pub fn build_launch_cmd(agent: &str, prompt: &str, terminal: &str) -> (String, String) {
     let normalized = normalize_agent_name(agent);
     let prompt_clean = prompt.trim();
-    let term = if terminal.trim().is_empty() { "omarchy-launch-terminal" } else { terminal.trim() };
+    let term = assistant_omarchy::terminal(terminal);
+    // xdg-terminal-exec takes the command itself; Omarchy's launcher after `--`.
+    let separator: Option<String> = (term != "xdg-terminal-exec").then(|| "--".to_string());
     // Cursor is the editor: it opens the folder in its own window.
     let args: Vec<String> = if normalized == "cursor" {
         vec!["cursor".into(), ".".into()]
     } else {
-        [term.to_string(), "--".to_string()].into_iter().chain(agent_args(normalized, prompt_clean)).collect()
+        [term].into_iter().chain(separator).chain(agent_args(normalized, prompt_clean)).collect()
     };
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let cmd = assistant_omarchy::shell_join(&refs);
