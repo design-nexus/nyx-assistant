@@ -16,7 +16,7 @@ pub struct LocationCfg {
 impl Default for LocationCfg {
     fn default() -> Self {
         Self {
-            enabled: true,
+            enabled: false,
             city: String::new(),
             latitude: None,
             longitude: None,
@@ -226,6 +226,7 @@ mod tests {
     async fn overrides_disabled_and_invalid_responses() {
         let service = LocationService::default();
         let cfg = LocationCfg {
+            enabled: true,
             city: "Test City".into(),
             ..Default::default()
         };

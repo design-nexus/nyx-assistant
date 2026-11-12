@@ -175,8 +175,14 @@ impl Capability {
             Self::FileWrite => Some(rules.files_write),
             Self::Shutdown => Some(rules.shutdown),
             Self::Privileged => Some(rules.admin),
+            Self::Web => Some(rules.web),
             _ => None,
         }
+    }
+
+    /// A web tool that only searches or reads (no typing into pages).
+    pub(crate) fn reads_web(tool: &str) -> bool {
+        READ_BROWSER.contains(&tool)
     }
 
     pub(crate) fn default_decision(self, tool: &str) -> Decision {

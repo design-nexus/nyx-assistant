@@ -74,6 +74,8 @@ pub struct Rules {
     pub shutdown: Decision,
     /// `admin.*`: only ask or deny; an allow still asks.
     pub admin: Decision,
+    /// Searching the web and reading pages (`permissions.web`): questions leave the computer.
+    pub web: Decision,
 }
 
 impl Default for Rules {
@@ -85,6 +87,7 @@ impl Default for Rules {
             files_write: Decision::Ask,
             shutdown: Decision::Ask,
             admin: Decision::Ask,
+            web: Decision::Ask,
         }
     }
 }
@@ -181,6 +184,12 @@ pub fn decide(tool: &str, cx: &Context) -> Verdict {
         return verdict(Decision::Deny, "disabled");
     }
     let capability_rule = capability.rule(cx.rules);
+    // The web rule covers searching and reading; the visible browser's form actions ask
+    // whatever it says, unless it denies the web outright.
+    let capability_rule = match capability_rule {
+        Some(d) if capability == Capability::Web && d != Decision::Deny && !Capability::reads_web(tool) => None,
+        other => other,
+    };
     if cx.tool_rule == Some(Decision::Deny) {
         return verdict(Decision::Deny, "tool rule");
     }
@@ -250,7 +259,6 @@ mod tests {
             "hypr.workspace",
             "notes.add",
             "history.undo",
-            "browser.search",
             "files.read",
             "apps.launch",
             "audio.mute",
@@ -259,6 +267,7 @@ mod tests {
             assert_eq!(d(t), Decision::Allow, "{t}");
         }
         for t in [
+            "browser.search",
             "notes.undo",
             "capture.screen",
             "routines.run",
@@ -480,7 +489,8 @@ mod tests {
 
     #[test]
     fn sending_after_untrusted_reads_asks_on_its_own() {
-        let rules = Rules::default();
+        assert_eq!(decide("web.search", &cx(&Rules::default())).decision(), Decision::Ask, "the web asks by default");
+        let rules = Rules { web: Decision::Allow, ..Rules::default() };
         let c = cx(&rules);
         let v = decide("web.search", &c);
         assert_eq!(v.decision(), Decision::Allow);

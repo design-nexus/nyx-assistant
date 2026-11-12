@@ -408,7 +408,7 @@ pub struct WakeWordCfg {
 impl Default for WakeWordCfg {
     fn default() -> Self {
         Self {
-            enabled: true,
+            enabled: false,
             threshold: 0.003,
             hangover_ms: 500,
             start_confirm_frames: 2,
@@ -653,6 +653,7 @@ pub struct PermissionsCfg {
     pub files_write: String,
     pub shutdown: String,
     pub admin: String,
+    pub web: String,
 }
 
 impl PermissionsCfg {
@@ -667,6 +668,7 @@ impl PermissionsCfg {
             files_write: d(&self.files_write),
             shutdown: d(&self.shutdown),
             admin: d(&self.admin),
+            web: d(&self.web),
         }
     }
 }
@@ -681,6 +683,7 @@ impl Default for PermissionsCfg {
             files_write: "confirm".into(),
             shutdown: "confirm".into(),
             admin: "confirm".into(),
+            web: "confirm".into(),
         }
     }
 }
@@ -1094,7 +1097,7 @@ impl Config {
             return fail("HTTP must bind a loopback IP and nonzero port");
         }
         let p = &self.permissions;
-        for policy in [&p.shell, &p.launch_app, &p.volume, &p.files_read, &p.files_write, &p.shutdown, &p.admin]
+        for policy in [&p.shell, &p.launch_app, &p.volume, &p.files_read, &p.files_write, &p.shutdown, &p.admin, &p.web]
             .into_iter()
             .chain(self.mcp.permissions.values())
         {
@@ -1421,7 +1424,9 @@ mod tests {
         assert_eq!(cfg.permissions.rules().shutdown, assistant_policy::Decision::Ask);
         assert!(cfg.barge_in.enabled);
         assert_eq!(cfg.barge_in.grace_ms, 500);
-        assert!(cfg.wake_word.enabled);
+        // Listening for its name and the network lookups are the person's choice.
+        assert!(!cfg.wake_word.enabled && !cfg.location.enabled);
+        assert_eq!(cfg.permissions.rules().web, assistant_policy::Decision::Ask);
         assert!(cfg.wake_word.phrases.iter().any(|p| p == "echo"));
         assert!(cfg.clock.enabled);
         assert!(cfg.clock.inject_prompt);

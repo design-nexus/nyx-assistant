@@ -92,8 +92,10 @@ mmproj = "auto"     # the image projector next to the model file
 idle_secs = 120     # unloaded after this long without a look (frees VRAM)
 max_width = 1280
 
+# Listening for its name keeps the microphone open while it waits (what it hears stays on
+# this computer). Off: it listens only while the push-to-talk key is held.
 [wake_word]
-enabled = true
+enabled = false
 threshold = 0.003
 hangover_ms = 500
 start_confirm_frames = 4
@@ -168,6 +170,8 @@ shell = "deny"        # reserved: there is no unrestricted shell tool
 shutdown = "confirm"
 admin = "confirm"     # packages and system services through the polkit helper: "confirm" or
                       # "deny" (an "allow" still asks; polkit also asks for your password)
+web = "confirm"       # web search and reading pages: your question goes to DuckDuckGo and the
+                      # sites it finds
 
 [agent]
 enabled = true
@@ -232,8 +236,9 @@ user_units = []
 
 
 [location]
-# On-demand approximate city from ipapi.co; cached in memory. No GPS tracking.
-enabled = true
+# On-demand approximate city from ipapi.co (your public IP leaves the computer); cached in
+# memory. No GPS tracking. Off until you turn it on.
+enabled = false
 city = "" # Set a city/address to override automatic detection.
 cache_minutes = 60
 # Optional manually supplied coordinates require both latitude and longitude.
