@@ -1,7 +1,7 @@
 [Unit]
 Description=Nyx Assistant voice daemon
 After=pipewire.service nyx-aid.socket
-Wants=pipewire.service nyx-assistant-hud.service
+Wants=pipewire.service nyx-assistant-hud.service nyx-assistant-visual.service
 # Five crashes in two minutes: stop restarting and say so.
 StartLimitIntervalSec=120
 StartLimitBurst=5

@@ -172,7 +172,7 @@ impl Hub {
     pub fn has_pending(&self) -> bool { !self.state.lock().unwrap().queue.is_empty() }
 }
 
-const UNITS: &[&str] = &["nyx-assistantd.service", "nyx-assistant-stt.service"];
+const UNITS: &[&str] = &["nyx-assistantd.service"];
 
 fn spool_path(unit: &str) -> PathBuf {
     paths::state_dir().join(format!("event-{unit}.json"))

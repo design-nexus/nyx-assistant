@@ -2496,7 +2496,7 @@ mod tests {
             Some(s) => s,
             None => return,
         };
-        let tts = KokoroProvider::load(&cfg).expect("load kokoro");
+        let tts = KokoroProvider::load(&cfg.voice()).expect("load kokoro");
         let pcm_f32 = tts.speak("Hey assistant, what time is it?").expect("synthesize");
         let pcm_16k = f32_24k_to_i16_16k(&pcm_f32);
         let mut gate = assistant_audio::StreamingVad::new(

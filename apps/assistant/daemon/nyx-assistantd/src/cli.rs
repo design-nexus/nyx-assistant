@@ -573,7 +573,7 @@ async fn main() -> anyhow::Result<()> {
         }
         "start" | "enable" => {
             let status = std::process::Command::new("systemctl")
-                .args(["--user", "start", "nyx-assistant-stt.service", "nyx-assistantd.service"])
+                .args(["--user", "start", "nyx-assistantd.service"])
                 .status()?;
             if status.success() {
                 println!("Started assistant daemon & loaded models.");
@@ -584,7 +584,7 @@ async fn main() -> anyhow::Result<()> {
         }
         "stop" | "disable" => {
             let status = std::process::Command::new("systemctl")
-                .args(["--user", "stop", "nyx-assistantd.service", "nyx-assistant-stt.service"])
+                .args(["--user", "stop", "nyx-assistantd.service"])
                 .status()?;
             if status.success() {
                 println!("Stopped assistant daemon & unloaded models from VRAM/RAM.");
@@ -601,13 +601,13 @@ async fn main() -> anyhow::Result<()> {
                 .unwrap_or(false);
             if is_active {
                 let status = std::process::Command::new("systemctl")
-                    .args(["--user", "stop", "nyx-assistantd.service", "nyx-assistant-stt.service"])
+                    .args(["--user", "stop", "nyx-assistantd.service"])
                     .status()?;
                 anyhow::ensure!(status.success(), "Failed to stop services");
                 println!("Assistant disabled (models unloaded).");
             } else {
                 let status = std::process::Command::new("systemctl")
-                    .args(["--user", "start", "nyx-assistant-stt.service", "nyx-assistantd.service"])
+                    .args(["--user", "start", "nyx-assistantd.service"])
                     .status()?;
                 anyhow::ensure!(status.success(), "Failed to start services");
                 println!("Assistant enabled (models loaded).");

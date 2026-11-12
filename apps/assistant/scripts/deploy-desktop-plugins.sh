@@ -8,7 +8,7 @@ chmod 0700 "$backup"
 systemctl --user is-active nyx-assistantd.service > "$backup/daemon-state" || true
 systemctl --user stop nyx-assistantd.service
 # The daemon owns all helpers. Wait for dependent units to finish stopping.
-systemctl --user stop nyx-assistant-stt.service nyx-assistant-hud.service
+systemctl --user stop nyx-assistant-hud.service nyx-assistant-visual.service
 assets=(.local/bin/nyx-assistantd .local/bin/nyx-assistant .local/bin/nyx-assistant-tui .local/bin/nyx-assistant-plugin-worker .config/nyx-assistant .local/share/nyx-assistant/abilities .local/share/nyx-assistant/plugin-data .local/share/nyx-assistant/actions.json)
 for asset in "${assets[@]}"; do
     if [[ -e "$HOME/$asset" ]]; then
@@ -18,7 +18,7 @@ for asset in "${assets[@]}"; do
 done
 rollback() {
     echo "Desktop plugin deployment failed; restoring $backup" >&2
-    systemctl --user stop nyx-assistantd.service nyx-assistant-stt.service nyx-assistant-hud.service || true
+    systemctl --user stop nyx-assistantd.service nyx-assistant-hud.service nyx-assistant-visual.service || true
     cp -a "$backup/files/." "$HOME/"
     if [[ $(cat "$backup/daemon-state") == active ]]; then systemctl --user start nyx-assistantd.service || true; fi
 }
@@ -41,7 +41,7 @@ for _ in {1..45}; do
 done
 [[ $healthy == 1 ]]
 if [[ $(cat "$backup/daemon-state") != active ]]; then
-    systemctl --user stop nyx-assistantd.service nyx-assistant-stt.service nyx-assistant-hud.service
+    systemctl --user stop nyx-assistantd.service nyx-assistant-hud.service nyx-assistant-visual.service
 fi
 trap - ERR
 printf 'Desktop plugins deployed. Initial daemon state restored. Backup: %s\n' "$backup"

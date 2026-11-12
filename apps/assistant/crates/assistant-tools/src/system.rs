@@ -353,7 +353,7 @@ mod tests {
         for bad in ["foo", ".service", "foo.mount", "a b.service", "../x.service", "x;rm.service"] {
             assert!(!valid_unit(bad), "{bad}");
         }
-        assert!(own_unit("nyx-assistantd.service") && own_unit("nyx-assistant-stt.service"));
+        assert!(own_unit("nyx-assistantd.service") && own_unit("nyx-assistant-hud.service"));
     }
 
     #[test]

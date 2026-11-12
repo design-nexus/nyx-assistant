@@ -9,7 +9,7 @@ import subprocess
 import time
 import uuid
 CLI = str(Path.home()/'.local/bin/nyx-assistant')
-UNITS = ['nyx-assistantd.service','nyx-assistant-stt.service','nyx-assistant-hud.service']
+UNITS = ['nyx-assistantd.service','nyx-assistant-hud.service','nyx-assistant-visual.service']
 TAG = 'verification-' + str(uuid.uuid4())
 def cli(*args, check=True):
     result = subprocess.run([CLI,*args], capture_output=True, text=True, timeout=95)

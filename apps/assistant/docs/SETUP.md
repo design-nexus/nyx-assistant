@@ -40,7 +40,7 @@ This:
 
 - installs `nyx-assistantd` and `nyx-assistant` to `~/.local/bin`
 - writes `~/.config/nyx-assistant/config.toml` if missing
-- enables the systemd **user** units (`nyx-assistantd`, `nyx-assistant-hud`, `nyx-assistant-stt`)
+- enables the systemd **user** units (`nyx-assistantd`, `nyx-assistant-hud`, `nyx-assistant-visual`)
 - appends Alt+Space PTT binds to `~/.config/hypr/bindings.lua` if they are not there
 
 Does not touch `/usr/share/omarchy/` or `~/.config/voxtype/`.
@@ -144,9 +144,9 @@ instruct models for spoken latency. Skip reasoning/thinking checkpoints.
 
 ## Voxtype
 
-F9 dictation stays Whisper. Assistant STT is Parakeet in `nyx-assistant-stt.service`
-(`voxtype-onnx-avx2`, isolated runtime). `install.sh` enables that unit.
-Do not point `/usr/bin/voxtype` at ONNX unless you mean to change F9 too.
+F9 dictation stays Omarchy's. The assistant hears with Nyx Voice's streaming
+recognizer, run by `nyx-assistantd` itself (the `nyx-voice-asr` worker); there is
+no separate speech unit.
 
 ## VRAM
 
