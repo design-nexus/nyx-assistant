@@ -37,7 +37,7 @@ dirs.workspace = true
 serde_json.workspace = true
 hound.workspace = true
 libc = "0.2"
-nyx-auth-proto = { git = "https://github.com/design-nexus/nyx-biometrics.git", rev = "5011c09b1482440247427a85db1f95b35b9b0e52", features = ["client"] }
+nyx-auth-proto = { git = "https://github.com/design-nexus/nyx-biometrics.git", rev = "ceb41b26602e2548da18a1ab408e81efe8c8a279", features = ["client"] }
 zbus = { version = "5", default-features = false, features = ["tokio"] }
 tokio.workspace = true
 tokio-util.workspace = true

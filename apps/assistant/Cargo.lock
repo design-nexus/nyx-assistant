@@ -1281,7 +1281,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1803,7 +1803,32 @@ dependencies = [
  "gobject-sys",
  "libc",
  "system-deps 9.0.1",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "gio-unix"
+version = "0.22.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce8d768735e229742c135afa3d3326604088d2df0679901cdb05e791fe2fbe0a"
+dependencies = [
+ "gio",
+ "gio-unix-sys",
+ "glib",
+ "libc",
+]
+
+[[package]]
+name = "gio-unix-sys"
+version = "0.22.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c01dbb58f92f67548d85e2209e073acc7ee04e107c7e04ee69b49e38b4933b4"
+dependencies = [
+ "gio-sys",
+ "glib-sys",
+ "gobject-sys",
+ "libc",
+ "system-deps 9.0.1",
 ]
 
 [[package]]
@@ -3128,6 +3153,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
 
 [[package]]
+name = "nyx-actions"
+version = "0.1.0"
+source = "git+https://github.com/design-nexus/nyx-core.git?rev=32f0c5e154fc44c763b8ecd80d35a3b298723afa#32f0c5e154fc44c763b8ecd80d35a3b298723afa"
+dependencies = [
+ "jsonschema",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "nyx-ai-client"
 version = "0.1.0"
 source = "git+https://github.com/design-nexus/nyx-ai.git?rev=9633690eee06724145be430db439244ba131825f#9633690eee06724145be430db439244ba131825f"
@@ -3185,7 +3220,7 @@ dependencies = [
 [[package]]
 name = "nyx-auth-core"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-biometrics.git?rev=5011c09b1482440247427a85db1f95b35b9b0e52#5011c09b1482440247427a85db1f95b35b9b0e52"
+source = "git+https://github.com/design-nexus/nyx-biometrics.git?rev=ceb41b26602e2548da18a1ab408e81efe8c8a279#ceb41b26602e2548da18a1ab408e81efe8c8a279"
 dependencies = [
  "nyx-peer",
  "serde",
@@ -3197,7 +3232,7 @@ dependencies = [
 [[package]]
 name = "nyx-auth-proto"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-biometrics.git?rev=5011c09b1482440247427a85db1f95b35b9b0e52#5011c09b1482440247427a85db1f95b35b9b0e52"
+source = "git+https://github.com/design-nexus/nyx-biometrics.git?rev=ceb41b26602e2548da18a1ab408e81efe8c8a279#ceb41b26602e2548da18a1ab408e81efe8c8a279"
 dependencies = [
  "libc",
  "nyx-auth-core",
@@ -3208,12 +3243,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "nyx-config"
+version = "0.1.0"
+source = "git+https://github.com/nyxos-project/nyx-system.git?rev=f68ecc891cd0d5a36b6ed29e93ed5ffc52e77acc#f68ecc891cd0d5a36b6ed29e93ed5ffc52e77acc"
+dependencies = [
+ "anyhow",
+ "serde",
+ "toml 1.1.6+spec-1.1.0",
+]
+
+[[package]]
 name = "nyx-core"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-core.git?rev=52cba5e27a3dd5f00c780f53e423302b4b5f9c9c#52cba5e27a3dd5f00c780f53e423302b4b5f9c9c"
+source = "git+https://github.com/design-nexus/nyx-core.git?rev=32f0c5e154fc44c763b8ecd80d35a3b298723afa#32f0c5e154fc44c763b8ecd80d35a3b298723afa"
 dependencies = [
  "anyhow",
  "gtk4",
+ "nyx-actions",
+ "nyx-peer",
+ "serde",
+ "serde_json",
+ "toml 1.1.6+spec-1.1.0",
+]
+
+[[package]]
+name = "nyx-desktop"
+version = "0.1.0"
+source = "git+https://github.com/design-nexus/nyx-core.git?rev=32f0c5e154fc44c763b8ecd80d35a3b298723afa#32f0c5e154fc44c763b8ecd80d35a3b298723afa"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "gio",
+ "gio-unix",
+ "glib",
  "serde",
  "serde_json",
  "toml 1.1.6+spec-1.1.0",
@@ -3222,12 +3284,12 @@ dependencies = [
 [[package]]
 name = "nyx-peer"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-core.git?rev=394ddf8193797cd1f420fac98b097d04fa75f0e2#394ddf8193797cd1f420fac98b097d04fa75f0e2"
+source = "git+https://github.com/design-nexus/nyx-core.git?rev=32f0c5e154fc44c763b8ecd80d35a3b298723afa#32f0c5e154fc44c763b8ecd80d35a3b298723afa"
 
 [[package]]
 name = "nyx-playback"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-design.git?rev=3483dacac5336148d400b97757377cc3b5074f47#3483dacac5336148d400b97757377cc3b5074f47"
+source = "git+https://github.com/design-nexus/nyx-design.git?rev=4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4#4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4"
 dependencies = [
  "async-channel",
  "gtk4",
@@ -3237,24 +3299,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "nyx-shell-proto"
+version = "0.1.0"
+source = "git+https://github.com/nyxos-project/nyx-shell.git?rev=a47b95353f3f11b8012fb2ce398296e1f3b12d9e#a47b95353f3f11b8012fb2ce398296e1f3b12d9e"
+dependencies = [
+ "serde",
+ "serde_json",
+ "toml 1.1.6+spec-1.1.0",
+]
+
+[[package]]
 name = "nyx-theme"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-design.git?rev=3483dacac5336148d400b97757377cc3b5074f47#3483dacac5336148d400b97757377cc3b5074f47"
+source = "git+https://github.com/design-nexus/nyx-design.git?rev=4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4#4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4"
 dependencies = [
  "gtk4",
  "nyx-core",
+ "nyx-theme-core",
+ "toml 1.1.6+spec-1.1.0",
+]
+
+[[package]]
+name = "nyx-theme-core"
+version = "0.2.0"
+source = "git+https://github.com/design-nexus/nyx-design.git?rev=4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4#4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4"
+dependencies = [
+ "nyx-config",
+ "nyx-core",
  "serde",
+ "serde_json",
  "toml 1.1.6+spec-1.1.0",
 ]
 
 [[package]]
 name = "nyx-ui"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-design.git?rev=3483dacac5336148d400b97757377cc3b5074f47#3483dacac5336148d400b97757377cc3b5074f47"
+source = "git+https://github.com/design-nexus/nyx-design.git?rev=4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4#4f8e16d6ae3dbc2a14091271e3b6bb29902c0df4"
 dependencies = [
  "gtk4",
  "nyx-core",
+ "nyx-desktop",
+ "nyx-shell-proto",
  "nyx-theme",
+ "serde_json",
+ "toml 1.1.6+spec-1.1.0",
 ]
 
 [[package]]
@@ -3851,7 +3939,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4273,7 +4361,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4540,7 +4628,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4570,7 +4658,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4908,10 +4996,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4924,7 +5012,7 @@ dependencies = [
  "parking_lot",
  "rustix",
  "signal-hook",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5404,7 +5492,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5931,7 +6019,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
