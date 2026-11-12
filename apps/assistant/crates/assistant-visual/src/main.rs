@@ -129,7 +129,9 @@ impl Aura {
                 for layer in levels.values().filter_map(Value::as_array).flatten() {
                     let monitor_y = state.iter().find(|m| m["name"].as_str() == Some(connector.as_str()))
                         .and_then(|m| m["y"].as_i64());
-                    if layer["namespace"] == "omarchy-bar" && layer["y"].as_i64() == monitor_y {
+                    // Nyx Bar on NyxOS, Waybar under Omarchy.
+                    let bar = layer["namespace"] == "nyx-bar" || layer["namespace"] == "omarchy-bar";
+                    if bar && layer["y"].as_i64() == monitor_y {
                         if let Some(height) = layer["h"].as_f64() {
                             bar_heights.insert(connector.clone(), height.clamp(0.0, 200.0));
                         }
@@ -480,7 +482,7 @@ mod tests {
         ]);
         let layers = serde_json::json!({
             "A":{"levels":{"2":[{"namespace":"omarchy-bar","y":0,"h":26}]}},
-            "B":{"levels":{"2":[{"namespace":"omarchy-bar","y":-900,"h":32}]}}
+            "B":{"levels":{"2":[{"namespace":"nyx-bar","y":-900,"h":32}]}}
         });
         let (physical, focused, fullscreen, bars) = Aura::snapshot_from(
             monitors.as_array().unwrap(), workspaces.as_array().unwrap(), layers.as_object().unwrap());
