@@ -50,6 +50,18 @@ pub const TOOLS: &[(&str, &str, &str)] = &[
     ),
 ];
 
+/// Whether a tool has something to work with here: the package and admin tools are
+/// pacman's and its root helper's (a missing helper says how to install it). NyxOS has
+/// neither, its software and services coming from the system configuration, so there
+/// they aren't offered at all.
+pub fn available(tool: &str) -> bool {
+    match tool {
+        "packages.search" | "packages.info" => std::path::Path::new("/usr/bin/pacman").is_file(),
+        t if t.starts_with("admin.") => std::path::Path::new("/usr/bin/pacman").is_file(),
+        _ => true,
+    }
+}
+
 /// How long a call may take. Package work waits on downloads, so it gets far longer than
 /// the usual 15 s; it includes the time spent at the password prompt.
 pub fn deadline(tool: &str) -> Duration {
