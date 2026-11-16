@@ -77,11 +77,12 @@ const PRIVATE_BROWSER: &str =
     "for b in nyx-browser firefox; do command -v $b >/dev/null && exec $b --private-window; done; exit 1";
 
 /// Night light as the Control Center does it: hyprsunset at 4000 K, started the first
-/// time; below 6000 K counts as on, and `identity` turns it off.
+/// time; below 6000 K counts as on. Off is 6500 K, so the reading says off, then
+/// `identity` (which alone leaves the reported temperature as it was).
 const NIGHT_LIGHT: &str = "t=$(hyprctl hyprsunset temperature 2>/dev/null); \
 case $t in ''|*[!0-9]*) systemd-run --user --unit nyx-hyprsunset hyprsunset >/dev/null 2>&1; sleep 0.6; \
 exec hyprctl hyprsunset temperature 4000;; esac; \
-if [ \"$t\" -lt 6000 ]; then exec hyprctl hyprsunset identity; else exec hyprctl hyprsunset temperature 4000; fi";
+if [ \"$t\" -lt 6000 ]; then hyprctl hyprsunset temperature 6500 && exec hyprctl hyprsunset identity; else exec hyprctl hyprsunset temperature 4000; fi";
 
 /// Keep awake as the Control Center does it (the same unit, so they agree): an idle
 /// inhibitor in a user unit, stopped to let the screen lock again.
