@@ -118,8 +118,8 @@ still get `{time}` and `{date}` in the system prompt. Reload after edits.
 Launched programs (terminal, browser, files, Spotify, …) are not compiled in.
 Edit `~/.config/nyx-assistant/apps.toml`, then `nyx-assistant reload`
 (or `systemctl --user reload nyx-assistantd` / SIGHUP). Models stay loaded.
-Shipped template: `config/apps.toml`. Use `omarchy = ["launch", "nautilus"]` or
-`exec = ["env", "GSK_RENDERER=gl", "/usr/bin/strata"]`.
+Shipped template: `config/apps.toml`. Use `omarchy = ["launch", "files"]` (a mapped
+name, or any app found by its desktop entry) or `exec = ["my-file-manager"]`.
 
 ## Voice commands
 

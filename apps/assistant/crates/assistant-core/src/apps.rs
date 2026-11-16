@@ -82,6 +82,6 @@ mod tests {
             .app
             .iter()
             .any(|a| a.phrases.iter().any(|p| p == "open terminal")));
-        assert!(apps.app.iter().any(|a| a.omarchy == ["launch", "nautilus"]));
+        assert!(apps.app.iter().any(|a| a.omarchy == ["launch", "files"]));
     }
 }

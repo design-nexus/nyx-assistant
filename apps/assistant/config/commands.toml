@@ -9,7 +9,7 @@
 # switchxkblayout, notify, dismissnotify and setcursor; anything else is refused.
 # `{n}` in [workspace] is the spoken number.
 
-can_do = "I didn't catch a command I can run. I can lock, close a window, change volume or brightness, switch workspaces 1 to 5, cycle wallpaper, toggle the bar, gaps, or night light, or take a screenshot"
+can_do = "I didn't catch a command I can run. I can lock, close a window, change volume or brightness, switch workspaces 1 to 5, toggle night light or do not disturb, keep the screen awake, or take a screenshot"
 
 forget = [
   "forget that",
@@ -337,22 +337,6 @@ omarchy = [
 
 [[command]]
 phrases = [
-  "next wallpaper",
-  "next background",
-  "change wallpaper",
-  "change the wallpaper",
-  "change background",
-]
-tool = "theme.bg_next"
-reply = "Next wallpaper."
-omarchy = [
-  "theme",
-  "bg",
-  "next",
-]
-
-[[command]]
-phrases = [
   "toggle bluetooth",
   "bluetooth",
   "turn bluetooth on",
@@ -396,95 +380,13 @@ omarchy = [
 
 [[command]]
 phrases = [
-  "toggle bar",
-  "toggle the bar",
-  "hide the bar",
-  "hide bar",
-  "show the bar",
-  "show bar",
-  "hide the panel",
-  "show the panel",
-]
-tool = "toggle.bar"
-reply = "Toggling the bar."
-omarchy = [
-  "toggle",
-  "bar",
-]
-
-[[command]]
-phrases = [
-  "toggle gaps",
-  "toggle window gaps",
-  "no gaps",
-  "window gaps",
-]
-tool = "hypr.gaps"
-reply = "Toggling gaps."
-omarchy = [
-  "hyprland",
-  "window",
-  "gaps",
-  "toggle",
-]
-
-[[command]]
-phrases = [
-  "toggle animations",
-  "toggle effects",
-  "reduce motion",
-]
-tool = "toggle.animations"
-reply = "Toggling animations."
-omarchy = [
-  "toggle",
-  "animations",
-]
-
-[[command]]
-phrases = [
-  "toggle transparency",
-  "toggle window transparency",
-]
-tool = "hypr.transparency"
-reply = "Toggling transparency."
-omarchy = [
-  "hyprland",
-  "window",
-  "transparency",
-  "toggle",
-]
-
-[[command]]
-phrases = [
   "toggle fullscreen",
   "fullscreen",
   "full screen",
 ]
 tool = "hypr.fullscreen"
 reply = "Toggling fullscreen."
-omarchy = [
-  "hyprland",
-  "window",
-  "tiled",
-  "fullscreen",
-  "toggle",
-]
-
-[[command]]
-phrases = [
-  "toggle layout",
-  "toggle tiling",
-  "switch layout",
-]
-tool = "hypr.layout"
-reply = "Toggling layout."
-omarchy = [
-  "hyprland",
-  "workspace",
-  "layout",
-  "toggle",
-]
+omarchy = ["hypr", "maximize_toggle"]
 
 [[command]]
 phrases = [
@@ -532,21 +434,6 @@ omarchy = [
 
 [[command]]
 phrases = [
-  "copy text from the screen",
-  "copy text from screen",
-  "capture text",
-  "read the screen",
-  "ocr",
-]
-tool = "capture.text"
-reply = "Capturing text."
-omarchy = [
-  "capture",
-  "text",
-]
-
-[[command]]
-phrases = [
   "close window",
   "close the window",
   "close this window",
@@ -586,47 +473,6 @@ phrases = [
 tool = "hypr.workspace"
 reply = "Former workspace."
 omarchy = ["hypr", "focus_workspace", "previous"]
-
-[[command]]
-phrases = [
-  "toggle touchpad",
-  "disable touchpad",
-  "enable touchpad",
-  "turn off the touchpad",
-  "turn on the touchpad",
-]
-tool = "toggle.touchpad"
-reply = "Toggling the touchpad."
-omarchy = [
-  "toggle",
-  "touchpad",
-]
-
-[[command]]
-phrases = [
-  "toggle screensaver",
-  "screensaver",
-]
-tool = "toggle.screensaver"
-reply = "Toggling the screensaver."
-omarchy = [
-  "toggle",
-  "screensaver",
-]
-
-[[command]]
-phrases = [
-  "fullscreen desktop",
-  "toggle fullscreen desktop",
-  "hide bar and gaps",
-]
-tool = "toggle.fullscreen_desktop"
-reply = "Toggling fullscreen desktop."
-omarchy = [
-  "toggle",
-  "fullscreen",
-  "desktop",
-]
 
 [[command]]
 phrases = [
@@ -792,21 +638,6 @@ omarchy = ["hypr", "cycle_previous"]
 
 [[command]]
 phrases = [
-  "pop the window out",
-  "pop out",
-  "pop window",
-  "pin the window",
-]
-tool = "hypr.window_pop"
-reply = "Popping the window out."
-omarchy = [
-  "hyprland",
-  "window",
-  "pop",
-]
-
-[[command]]
-phrases = [
   "open the menu",
   "omarchy menu",
   "open omarchy menu",
@@ -832,19 +663,6 @@ omarchy = [
   "menu",
   "toggle",
   "apps",
-]
-
-[[command]]
-phrases = [
-  "emoji picker",
-  "open emojis",
-  "emojis",
-]
-tool = "app.launch"
-reply = "Opening emojis."
-omarchy = [
-  "menu",
-  "emoji",
 ]
 
 [[command]]

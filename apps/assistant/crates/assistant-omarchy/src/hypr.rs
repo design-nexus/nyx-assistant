@@ -30,6 +30,9 @@ pub struct Client {
     pub focus_history_id: i64,
     #[serde(default)]
     pub floating: bool,
+    /// 0 none, 1 maximized (full width, still tiled), 2 full screen.
+    #[serde(default)]
+    pub fullscreen: i64,
     /// Top-left corner in layout (logical) coordinates.
     #[serde(default)]
     pub at: [i64; 2],
@@ -238,6 +241,8 @@ pub enum Action {
     MoveToWorkspace(String, bool),
     ToggleSpecial(String),
     FloatToggle,
+    /// The focused window over the whole tiled area and back (Super+Alt+F).
+    MaximizeToggle,
     ToggleSplit,
     FocusDirection(char),
     CycleNext,
@@ -277,6 +282,7 @@ impl Action {
                 Self::ToggleSpecial(name.into())
             }
             "float_toggle" => Self::FloatToggle,
+            "maximize_toggle" => Self::MaximizeToggle,
             "toggle_split" => Self::ToggleSplit,
             "focus_direction" => match one()? {
                 d @ ("l" | "r" | "u" | "d") => Self::FocusDirection(d.chars().next().unwrap()),
@@ -296,6 +302,7 @@ impl Action {
             Self::MoveToWorkspace(ws, follow) => format!(r#"hl.dsp.window.move({{ workspace = "{ws}", follow = {follow} }})"#),
             Self::ToggleSpecial(name) => format!(r#"hl.dsp.workspace.toggle_special("{name}")"#),
             Self::FloatToggle => r#"hl.dsp.window.float({ action = "toggle" })"#.into(),
+            Self::MaximizeToggle => r#"hl.dsp.window.fullscreen({ mode = "maximized" })"#.into(),
             Self::ToggleSplit => r#"hl.dsp.layout("togglesplit")"#.into(),
             Self::FocusDirection(d) => format!(r#"hl.dsp.focus({{ direction = "{d}" }})"#),
             Self::CycleNext => "hl.dsp.window.cycle_next()".into(),
@@ -322,7 +329,10 @@ pub async fn run_action(args: &[&str]) -> Result<String> {
     let action = Action::parse(args)?;
     let window = active_window().await.ok().flatten();
     let workspace = active_workspace().await.ok();
-    if matches!(action, Action::CloseWindow | Action::MoveToWorkspace(..) | Action::FloatToggle | Action::ToggleSplit) {
+    if matches!(
+        action,
+        Action::CloseWindow | Action::MoveToWorkspace(..) | Action::FloatToggle | Action::MaximizeToggle | Action::ToggleSplit
+    ) {
         ensure!(window.is_some(), "no window is focused");
     }
     dispatch(action.lua()).await?;
@@ -342,6 +352,10 @@ pub async fn run_action(args: &[&str]) -> Result<String> {
         Action::FloatToggle => {
             let was = window.as_ref().is_some_and(|w| w.floating);
             settled(move |_, _, cs: &[Client]| cs.iter().any(|c| c.address == before_win && c.floating != was)).await
+        }
+        Action::MaximizeToggle => {
+            let was = window.as_ref().map(|w| w.fullscreen).unwrap_or_default();
+            settled(move |_, _, cs: &[Client]| cs.iter().any(|c| c.address == before_win && c.fullscreen != was)).await
         }
         Action::FocusDirection(_) | Action::CycleNext | Action::CyclePrevious => settled(|w: Option<&Client>, _, _| w.is_some_and(|w| w.address != before_win)).await,
         // Nothing to read back: the special workspace's visibility and the split aren't reported.
@@ -364,6 +378,7 @@ mod tests {
         assert!(Action::parse(&["move_to_workspace", "4", "true"]).is_err());
         assert_eq!(Action::parse(&["focus_direction", "l"]).unwrap().lua(), r#"hl.dsp.focus({ direction = "l" })"#);
         assert_eq!(Action::parse(&["toggle_special", "scratchpad"]).unwrap().lua(), r#"hl.dsp.workspace.toggle_special("scratchpad")"#);
+        assert_eq!(Action::parse(&["maximize_toggle"]).unwrap().lua(), r#"hl.dsp.window.fullscreen({ mode = "maximized" })"#);
         for bad in [
             &["focus_workspace", r#"1" }) hl.dsp.exec_cmd("rm"#][..],
             &["move_to_workspace", "e+1"],

@@ -46,19 +46,17 @@ phrases = [
   "open the file manager",
 ]
 reply = "Opening files."
-omarchy = ["launch", "nautilus"]
-# Example: use Strata instead of Nautilus
-# exec = ["env", "GSK_RENDERER=gl", "/usr/bin/strata"]
+omarchy = ["launch", "files"]
 
 [[app]]
-phrases = ["open nautilus", "launch nautilus"]
-reply = "Opening Nautilus."
-omarchy = ["launch", "nautilus"]
-
-[[app]]
-phrases = ["open spotify", "launch spotify", "play spotify", "spotify", "open music", "launch music"]
+phrases = ["open spotify", "launch spotify", "play spotify", "spotify"]
 reply = "Opening Spotify."
 omarchy = ["launch", "spotify"]
+
+[[app]]
+phrases = ["open music", "launch music", "open nyx music"]
+reply = "Opening Music."
+omarchy = ["launch", "music"]
 
 [[app]]
 phrases = ["open signal", "launch signal", "signal"]
@@ -68,7 +66,7 @@ omarchy = ["launch", "signal"]
 [[app]]
 phrases = ["open discord", "launch discord", "discord"]
 reply = "Opening Discord."
-omarchy = ["launch", "discord", "community"]
+omarchy = ["launch", "discord"]
 
 [[app]]
 phrases = ["about this computer", "system info", "system information"]
@@ -76,9 +74,14 @@ reply = "Opening system info."
 omarchy = ["launch", "about"]
 
 [[app]]
-phrases = ["open 1password", "open one password", "open passwords", "passwords"]
+phrases = ["open 1password", "open one password"]
 reply = "Opening 1Password."
 omarchy = ["launch", "1password"]
+
+[[app]]
+phrases = ["open passwords", "passwords", "open my passwords"]
+reply = "Opening Passwords."
+omarchy = ["launch", "passwords"]
 
 [[app]]
 phrases = ["open obsidian", "launch obsidian", "obsidian"]
@@ -91,16 +94,16 @@ reply = "Opening ChatGPT."
 exec = ["chatgpt"]
 
 [[app]]
-phrases = ["open omawrite", "launch omawrite", "omawrite"]
-reply = "Opening Omawrite."
-exec = ["omawrite"]
+phrases = ["open write", "launch write", "open a document", "new document"]
+reply = "Opening Write."
+omarchy = ["launch", "write"]
 
 [[app]]
 phrases = ["open calculator", "calculator", "launch calculator"]
 reply = "Opening the calculator."
-exec = ["omacalc"]
+omarchy = ["launch", "calculator"]
 
 [[app]]
 phrases = ["color picker", "pick a color", "open color picker"]
 reply = "Opening the color picker."
-exec = ["hyprpicker", "-a"]
+exec = ["nyx-capture", "--capture", "colour"]

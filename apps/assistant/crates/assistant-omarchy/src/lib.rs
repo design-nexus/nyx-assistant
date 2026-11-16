@@ -56,6 +56,12 @@ fn without_omarchy(args: &[&str]) -> Option<(Vec<&'static str>, bool)> {
         "menu clipboard" => (vec!["nyx-clipboard"], true),
         "launch terminal" => (vec!["xdg-terminal-exec"], true),
         "launch browser" => (vec!["sh", "-c", BROWSER], true),
+        "launch browser --private" => (vec!["sh", "-c", PRIVATE_BROWSER], true),
+        "toggle nightlight" => (vec!["sh", "-c", NIGHT_LIGHT], false),
+        "toggle idle stay-awake" => (vec!["sh", "-c", KEEP_AWAKE], false),
+        "audio output switch" => (vec!["sh", "-c", NEXT_OUTPUT], false),
+        "theme switcher" => (vec!["nyx", "settings", "open", "theme"], true),
+        "menu keybindings" => (vec!["nyx", "settings", "open", "keybindings"], true),
         "launch nautilus" | "launch files" => (vec!["nyx-files"], true),
         "launch about" => (vec!["nyx", "settings", "open", "about"], true),
         _ => return None,
@@ -65,6 +71,30 @@ fn without_omarchy(args: &[&str]) -> Option<(Vec<&'static str>, bool)> {
 /// The default web browser's desktop entry, else whatever opens web pages.
 const BROWSER: &str =
     "b=$(xdg-settings get default-web-browser 2>/dev/null) && [ -n \"$b\" ] && exec gtk-launch \"$b\"; exec xdg-open https://";
+
+/// A private window in Nyx Browser, else Firefox.
+const PRIVATE_BROWSER: &str =
+    "for b in nyx-browser firefox; do command -v $b >/dev/null && exec $b --private-window; done; exit 1";
+
+/// Night light as the Control Center does it: hyprsunset at 4000 K, started the first
+/// time; below 6000 K counts as on, and `identity` turns it off.
+const NIGHT_LIGHT: &str = "t=$(hyprctl hyprsunset temperature 2>/dev/null); \
+case $t in ''|*[!0-9]*) systemd-run --user --unit nyx-hyprsunset hyprsunset >/dev/null 2>&1; sleep 0.6; \
+exec hyprctl hyprsunset temperature 4000;; esac; \
+if [ \"$t\" -lt 6000 ]; then exec hyprctl hyprsunset identity; else exec hyprctl hyprsunset temperature 4000; fi";
+
+/// Keep awake as the Control Center does it (the same unit, so they agree): an idle
+/// inhibitor in a user unit, stopped to let the screen lock again.
+const KEEP_AWAKE: &str = "if systemctl --user is-active --quiet nyx-keep-awake.service; \
+then exec systemctl --user stop nyx-keep-awake.service; \
+else exec systemd-run --user --unit nyx-keep-awake.service --description 'Keep awake (Assistant)' \
+systemd-inhibit --what=idle --who=Assistant '--why=Keep awake' sleep infinity; fi";
+
+/// The next audio output after the default one, from `wpctl status`'s Audio sinks.
+const NEXT_OUTPUT: &str = "n=$(wpctl status | awk 'BEGIN { n = 0; cur = 0 } \
+/Sinks:/ && !done { s = 1; next } s && /(Sources|Filters|Streams):/ { s = 0; done = 1 } \
+s && match($0, /[0-9]+\\./) { ids[n] = substr($0, RSTART, RLENGTH - 1); if ($0 ~ /\\*/) cur = n; n++ } \
+END { if (n) print ids[(cur + 1) % n] }') && [ -n \"$n\" ] && exec wpctl set-default \"$n\"";
 
 /// The desktop entry an `omarchy launch NAME` means, where Omarchy isn't installed: an
 /// installed entry whose id is NAME, ends in `.NAME` (com.spotify.Client is "spotify"
@@ -204,6 +234,43 @@ mod tests {
         assert!(!should_hypr_exec(&["exec", "obsidian"]));
         assert!(!should_hypr_exec(&["system", "lock"]));
         assert!(!should_hypr_exec(&["audio", "output", "volume", "raise"]));
+    }
+
+    /// Every shipped command and app reaches NyxOS: an `omarchy …` default has a NyxOS
+    /// route (a mapping, or `launch NAME` found by desktop entry), and no `exec` runs one
+    /// of Omarchy's own programs (NYX-APP-ASSISTANT-001).
+    #[test]
+    fn shipped_defaults_run_without_omarchy() {
+        fn argvs(v: &toml::Value, key: &str, out: &mut Vec<Vec<String>>) {
+            match v {
+                toml::Value::Table(t) => {
+                    if let Some(toml::Value::Array(a)) = t.get(key) {
+                        out.push(a.iter().filter_map(|x| x.as_str().map(String::from)).collect());
+                    }
+                    t.values().for_each(|x| argvs(x, key, out));
+                }
+                toml::Value::Array(a) => a.iter().for_each(|x| argvs(x, key, out)),
+                _ => {}
+            }
+        }
+        let mut omarchy = Vec::new();
+        let mut exec = Vec::new();
+        for file in [include_str!("../../../config/commands.toml"), include_str!("../../../config/apps.toml")] {
+            let v: toml::Value = toml::from_str(file).unwrap();
+            argvs(&v, "omarchy", &mut omarchy);
+            argvs(&v, "exec", &mut exec);
+        }
+        assert!(omarchy.len() > 30);
+        for argv in &omarchy {
+            let args: Vec<&str> = argv.iter().map(String::as_str).collect();
+            let routed = args.first() == Some(&"hypr") && hypr::Action::parse(&args[1..]).is_ok()
+                || without_omarchy(&args).is_some()
+                || matches!(args.as_slice(), ["launch", _]);
+            assert!(routed, "no NyxOS route for omarchy {args:?}");
+        }
+        for argv in &exec {
+            assert!(!argv[0].starts_with("oma"), "Omarchy program in a default: {argv:?}");
+        }
     }
 
     #[test]

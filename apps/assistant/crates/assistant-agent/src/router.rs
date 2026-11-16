@@ -562,7 +562,8 @@ mod tests {
             other => panic!("{other:?}"),
         }
         assert_eq!(tool("brighter").as_deref(), Some("display.brightness_up"));
-        assert_eq!(tool("next wallpaper").as_deref(), Some("theme.bg_next"));
+        // Omarchy's, with nothing like it on NyxOS: not a desktop command any more.
+        assert_eq!(tool("next wallpaper"), None);
         assert_eq!(tool("go to workspace 3").as_deref(), Some("hypr.workspace"));
         match route("move to workspace 3") {
             Intent::Desktop { tool, spoken, .. } => {
@@ -584,12 +585,8 @@ mod tests {
         assert_eq!(tool("open files").as_deref(), Some("app.launch"));
         match route("open files") {
             Intent::Desktop { omarchy, .. } => {
-                assert_eq!(omarchy, ["launch", "nautilus"]);
+                assert_eq!(omarchy, ["launch", "files"]);
             }
-            other => panic!("{other:?}"),
-        }
-        match route("open nautilus") {
-            Intent::Desktop { omarchy, .. } => assert_eq!(omarchy, ["launch", "nautilus"]),
             other => panic!("{other:?}"),
         }
         assert_eq!(
@@ -678,26 +675,27 @@ mod tests {
 
     #[test]
     fn more_omarchy_tools() {
+        // Omarchy's own switches with nothing like them on NyxOS left the defaults.
+        for gone in [
+            "toggle bar",
+            "hide the bar",
+            "toggle gaps",
+            "toggle animations",
+            "toggle transparency",
+            "toggle layout",
+            "toggle touchpad",
+            "capture text",
+        ] {
+            assert_eq!(tool(gone), None, "{gone}");
+        }
         assert_eq!(tool("open spotify").as_deref(), Some("app.launch"));
         assert_eq!(tool("spotify").as_deref(), Some("app.launch"));
         assert!(matches!(route_with_apps("spotify", &[]), Intent::Chat));
         assert_eq!(tool("open signal").as_deref(), Some("app.launch"));
-        assert_eq!(tool("toggle bar").as_deref(), Some("toggle.bar"));
-        assert_eq!(tool("hide the bar").as_deref(), Some("toggle.bar"));
-        assert_eq!(tool("toggle gaps").as_deref(), Some("hypr.gaps"));
-        assert_eq!(
-            tool("toggle animations").as_deref(),
-            Some("toggle.animations")
-        );
-        assert_eq!(
-            tool("toggle transparency").as_deref(),
-            Some("hypr.transparency")
-        );
         assert_eq!(
             tool("toggle fullscreen").as_deref(),
             Some("hypr.fullscreen")
         );
-        assert_eq!(tool("toggle layout").as_deref(), Some("hypr.layout"));
         assert_eq!(
             tool("screenshot region").as_deref(),
             Some("capture.screenshot_region")
@@ -717,7 +715,6 @@ mod tests {
             Some("hypr.workspace")
         );
         assert_eq!(tool("former workspace").as_deref(), Some("hypr.workspace"));
-        assert_eq!(tool("toggle touchpad").as_deref(), Some("toggle.touchpad"));
         assert_eq!(
             tool("switch audio output").as_deref(),
             Some("audio.output_switch")
@@ -731,7 +728,6 @@ mod tests {
         assert_eq!(tool("open obsidian").as_deref(), Some("app.launch"));
         assert_eq!(tool("open chatgpt").as_deref(), Some("app.launch"));
         assert_eq!(tool("open music").as_deref(), Some("app.launch"));
-        assert_eq!(tool("capture text").as_deref(), Some("capture.text"));
         assert_eq!(
             tool("toggle scratchpad").as_deref(),
             Some("hypr.scratchpad")
@@ -743,7 +739,7 @@ mod tests {
         assert_eq!(tool("toggle floating").as_deref(), Some("hypr.float"));
         assert_eq!(tool("toggle split").as_deref(), Some("hypr.split"));
         assert_eq!(tool("open passwords").as_deref(), Some("app.launch"));
-        assert_eq!(tool("open omawrite").as_deref(), Some("app.launch"));
+        assert_eq!(tool("open write").as_deref(), Some("app.launch"));
         assert_eq!(tool("private browser").as_deref(), Some("app.launch"));
         assert_eq!(tool("focus left").as_deref(), Some("hypr.focus"));
         assert_eq!(tool("next window").as_deref(), Some("hypr.window_cycle"));
@@ -751,7 +747,7 @@ mod tests {
         assert_eq!(tool("color picker").as_deref(), Some("app.launch"));
         assert_eq!(tool("open the menu").as_deref(), Some("app.launch"));
         assert_eq!(tool("apps menu").as_deref(), Some("app.launch"));
-        assert_eq!(tool("emoji picker").as_deref(), Some("app.launch"));
+        assert_eq!(tool("emoji picker"), None);
         assert_eq!(tool("clipboard history").as_deref(), Some("app.launch"));
         assert_eq!(tool("show keybindings").as_deref(), Some("app.launch"));
         assert_eq!(
@@ -762,10 +758,7 @@ mod tests {
             tool("stop recording").as_deref(),
             Some("capture.screenrecord")
         );
-        assert_eq!(
-            tool("pop the window out").as_deref(),
-            Some("hypr.window_pop")
-        );
+        assert_eq!(tool("pop the window out"), None);
         assert_eq!(tool("close"), None);
         assert!(is_filler("Yeah."));
         assert!(is_filler("ok"));
@@ -781,13 +774,13 @@ mod tests {
             exec: vec![
                 "env".into(),
                 "GSK_RENDERER=gl".into(),
-                "/usr/bin/strata".into(),
+                "/usr/bin/my-file-manager".into(),
             ],
         }];
         match route_with_apps("open files", &apps) {
             Intent::Desktop { omarchy, .. } => {
                 assert_eq!(omarchy[0], "exec");
-                assert!(omarchy.iter().any(|a| a == "/usr/bin/strata"));
+                assert!(omarchy.iter().any(|a| a == "/usr/bin/my-file-manager"));
             }
             other => panic!("{other:?}"),
         }
