@@ -13,6 +13,8 @@ import "Nyx/Theme"
 ShellRoot {
     id: root
 
+    // Waits longer between tries while the daemon stays off.
+    property int retryMs: 1000
     property string daemonState: "idle"
     property string sessionMode: "wake"
     property int sessionRemaining: 0
@@ -247,6 +249,7 @@ ShellRoot {
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: function (data) {
+                root.retryMs = 1000;
                 root.handleLine(data);
             }
         }
@@ -264,6 +267,9 @@ ShellRoot {
                 root.dictationDraft = "";
                 root.toolProgress = "";
                 hideTimer.stop();
+                // While the daemon isn't running, wait longer each time, up to a minute.
+                restartTimer.interval = root.retryMs;
+                root.retryMs = Math.min(root.retryMs * 2, 60000);
                 restartTimer.restart();
             }
         }

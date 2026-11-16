@@ -1294,23 +1294,36 @@ fn monitor_events(sink:EventSink) {
 }
 
 
+/// Follow the daemon's events. While it isn't running, try again after 2 s, doubling up
+/// to a minute, and tell the window it's idle only once per disconnect.
 fn listen(tx: EventSink) {
-    std::thread::spawn(move || loop {
-        let socket = assistant_core::paths::socket_path();
-        if let Ok(mut stream) = UnixStream::connect(&socket) {
-            let _=stream.write_all(b"{\"type\":\"request\",\"request_id\":\"visual-sync\",\"action\":{\"type\":\"status\"}}\n");
-            for line in BufReader::new(stream).lines() {
-                let Ok(line) = line else { break };
-                if let Ok(value) = serde_json::from_str(&line) {
-                    if tx.send(value).is_err() {
-                        return;
+    std::thread::spawn(move || {
+        let mut wait = Duration::from_secs(2);
+        let mut told = false;
+        loop {
+            let socket = assistant_core::paths::socket_path();
+            if let Ok(mut stream) = UnixStream::connect(&socket) {
+                wait = Duration::from_secs(2);
+                told = false;
+                let _=stream.write_all(b"{\"type\":\"request\",\"request_id\":\"visual-sync\",\"action\":{\"type\":\"status\"}}\n");
+                for line in BufReader::new(stream).lines() {
+                    let Ok(line) = line else { break };
+                    if let Ok(value) = serde_json::from_str(&line) {
+                        if tx.send(value).is_err() {
+                            return;
+                        }
                     }
                 }
+            } else {
+                wait = (wait * 2).min(Duration::from_secs(60));
             }
+            if !told {
+                if tx.send(serde_json::json!({"type": "state", "state": "idle"})).is_err() { return; }
+                if tx.send(serde_json::json!({"type": "session", "mode": "wake", "remaining_secs": 0})).is_err() { return; }
+                told = true;
+            }
+            std::thread::sleep(wait);
         }
-        if tx.send(serde_json::json!({"type": "state", "state": "idle"})).is_err() { return; }
-        if tx.send(serde_json::json!({"type": "session", "mode": "wake", "remaining_secs": 0})).is_err() { return; }
-        std::thread::sleep(Duration::from_secs(2));
     });
 }
 

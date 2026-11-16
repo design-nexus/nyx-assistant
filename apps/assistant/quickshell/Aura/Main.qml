@@ -347,7 +347,7 @@ Scope {
                 root.level = 0;
                 root.levelTarget = 0;
                 restart.interval = root.retryMs;
-                root.retryMs = Math.min(root.retryMs * 2, 30000);
+                root.retryMs = Math.min(root.retryMs * 2, 60000);
                 restart.restart();
             } else {
                 snapshot.running = true;
