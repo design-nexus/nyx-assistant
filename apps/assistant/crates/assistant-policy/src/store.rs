@@ -489,8 +489,9 @@ mod tests {
         r.outcome = "denied".into();
         log.record(r);
         drop(log);
+        // The journal writes on its own thread: up to ten seconds, for a loaded build machine.
         let mut rows = Vec::new();
-        for _ in 0..50 {
+        for _ in 0..500 {
             rows = recent(&path, 10).unwrap();
             if rows.len() == 2 {
                 break;
