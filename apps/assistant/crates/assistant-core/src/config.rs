@@ -1343,6 +1343,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "needs GGUF models installed (LM Studio); run with --ignored on a machine with them"]
     fn scans_local_models_finds_ggufs() {
         let models = Config::scan_local_models();
         // The test machine has models installed in LM Studio
