@@ -1,6 +1,16 @@
 # Assistant setup
 
-## Build deps (Hades / Omarchy)
+## On NyxOS
+
+Choose Assistant in Welcome, or install it from the Store or with
+`nyx install nyx-assistant`: there's nothing to build. Its language model runs in Nyx
+AI Core (CUDA on computers with an NVIDIA card, which NyxOS sets up with the driver;
+Vulkan otherwise) and its speech in Nyx Voice. The models download the first time you
+set it up. The administrator tools that drive pacman aren't installed on NyxOS.
+
+The rest of this page is for building and running it yourself on Omarchy.
+
+## Build deps (Omarchy)
 
 - rustc / cargo
 - cmake, clang, pkg-config

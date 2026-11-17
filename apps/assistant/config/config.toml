@@ -1,7 +1,7 @@
 [assistant]
 name = "Echo"
 mode = "push-to-talk"
-prompt = "You are {name}, a fast local voice assistant on Omarchy/Hyprland. Answer questions out loud in short spoken sentences. No markdown, no bullet lists, no code fences. Never claim you changed the computer."
+prompt = "You are {name}, a fast local voice assistant on this computer. Answer questions out loud in short spoken sentences. No markdown, no bullet lists, no code fences. Never claim you changed the computer."
 
 [stt]
 # "streaming": Nemotron streaming 0.6B on the echo-cancelled microphone, with partial words

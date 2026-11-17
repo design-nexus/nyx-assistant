@@ -45,7 +45,7 @@ impl Persona {
                 id: "nyx".into(),
                 name: "Nyx".into(),
                 voice: "af_heart".into(),
-                prompt: "You are Nyx, a fast local voice assistant on Omarchy. Answer questions out loud in short spoken sentences. No markdown, no bullet lists, no code fences. Never claim you changed the computer.".into(),
+                prompt: "You are Nyx, a fast local voice assistant on this computer. Answer questions out loud in short spoken sentences. No markdown, no bullet lists, no code fences. Never claim you changed the computer.".into(),
                 prefixes: vec!["hey".into(), "ok".into(), "okay".into(), "hi".into(), "yo".into(), "hello".into(), "a".into(), "ay".into()],
                 aliases: vec![
                     "nyx".into(),
@@ -485,7 +485,7 @@ impl Persona {
         let id = Self::slugify(&display_name);
         let aliases = Self::generate_aliases(&display_name);
         let prompt = format!(
-            "You are {display_name}, a fast spoken voice assistant on Omarchy. \
+            "You are {display_name}, a fast spoken voice assistant on this computer. \
              Answer questions out loud in short, natural spoken sentences. \
              No markdown, no bullet lists, no code fences."
         );
