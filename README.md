@@ -1,6 +1,6 @@
 # Nyx Assistant — Local Voice Assistant
 
-Resident voice assistant for Omarchy/Hyprland.
+Resident voice assistant for NyxOS and Omarchy.
 The process is `nyx-assistantd`. Custom personas can be configured via settings.
 
 Phase 1 milestone:
@@ -13,6 +13,8 @@ Primary metric: time from finishing a sentence to hearing the first word back.
 
 ## Install
 
+On NyxOS, choose Assistant in Welcome when you set up, or install it later from the Store or with `nyx install nyx-assistant`. On Omarchy:
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/design-nexus/nyx-assistant/main/install.sh | bash
 ```
@@ -21,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/design-nexus/nyx-assistant/main/ins
 
 Spoken loop is up: Alt+Space PTT, warm Parakeet STT (F9 stays Whisper), llama.cpp
 CUDA GGUF, Kokoro (CPU on Blackwell), desktop router, `apps.toml`, barge-in, and
-a Quickshell HUD that follows the Omarchy theme and font.
+a Quickshell HUD that follows the desktop theme and font.
 
 See `docs/ARCHITECTURE.md`, `docs/SETUP.md`, `docs/BENCHMARKS.md`.
 
