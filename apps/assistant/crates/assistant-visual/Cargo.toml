@@ -16,11 +16,11 @@ tokio.workspace = true
 tempfile.workspace = true
 gtk = { version = "0.11", package = "gtk4", features = ["v4_18"] }
 gtk4-layer-shell = "0.8"
-nyx-theme = { git = "https://github.com/design-nexus/nyx-design.git", rev = "ea8839d237a23ec83887429475f0780c06a36826" }
+nyx-theme = { git = "https://github.com/design-nexus/nyx-design.git", rev = "914b14ec5574ca04cbb985b571cfbfb0a42aae15" }
 serde_json.workspace = true
 poppler-rs = "0.26"
 libshumate = { version = "0.8.1", features = ["gtk_v4_18", "v1_7"] }
-nyx-playback = { git = "https://github.com/design-nexus/nyx-design.git", rev = "ea8839d237a23ec83887429475f0780c06a36826" }
+nyx-playback = { git = "https://github.com/design-nexus/nyx-design.git", rev = "914b14ec5574ca04cbb985b571cfbfb0a42aae15" }
 plotters = { version = "0.3.7", default-features = false, features = ["line_series", "ttf"] }
 plotters-cairo = "0.9"
 

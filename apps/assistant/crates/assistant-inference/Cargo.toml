@@ -9,7 +9,7 @@ description = "The Assistant's language model, in Nyx AI Core"
 anyhow.workspace = true
 assistant-core.workspace = true
 base64 = "0.22"
-nyx-ai-client = { git = "https://github.com/design-nexus/nyx-ai.git", rev = "9633690eee06724145be430db439244ba131825f" }
+nyx-ai-client = { git = "https://github.com/design-nexus/nyx-ai.git", rev = "277b9a5b11fead7850bc8ce68ddc57f08c09f983" }
 tokio.workspace = true
 tracing.workspace = true
 
