@@ -5,8 +5,7 @@
     "nyx-assistantd",
     "assistant-tui",
     "assistant-plugin-worker",
-    "assistant-privileged",
-    "assistant-asr"
+    "assistant-privileged"
   ],
   "manifest": "apps/assistant/Cargo.toml",
   "prepare": [],
