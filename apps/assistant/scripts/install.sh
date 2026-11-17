@@ -113,6 +113,9 @@ if [[ $("$helper" --version 2>/dev/null || echo 0) -lt $want ]] || ! cmp -s "$po
     printf 'Admin tools (packages, system services) need their helper: sudo %s install-helper\n' "$bin_dir/nyx-assistant"
   fi
 fi
+# The launcher entry: Settings › Assistant, where it's turned on.
+install -Dm644 "$root/data/io.github.design_nexus.nyx.Assistant.desktop" -t "$HOME/.local/share/applications"
+install -Dm644 "$root/data/io.github.design_nexus.nyx.Assistant.svg" -t "$HOME/.local/share/icons/hicolor/scalable/apps"
 systemctl --user daemon-reload
 systemctl --user reenable nyx-assistant-visual.service nyx-assistant-hud.service
 # Preserve existing service enablement during migration.

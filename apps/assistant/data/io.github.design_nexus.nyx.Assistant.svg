@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#26262a"/><stop offset="1" stop-color="#121214"/></linearGradient>
+    <radialGradient id="glow" cx=".2" cy=".1" r=".9"><stop stop-color="#7ee2ee" stop-opacity=".22"/><stop offset="1" stop-color="#7ee2ee" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7ee2ee"/><stop offset="1" stop-color="#35afc9"/></linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#tile)"/>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#glow)"/>
+  <rect x="8.5" y="8.5" width="111" height="111" rx="27.5" fill="none" stroke="#7ee2ee" stroke-opacity=".3"/>
+  <path d="M24 64a40 40 0 1 0 80 0a40 40 0 1 0-80 0Z M96 18C97 25 99 27 106 28C99 29 97 31 96 38C95 31 93 29 86 28C93 27 95 25 96 18Z" fill="#7ee2ee" fill-opacity=".35"/>
+  <path d="M64 26C68 50 78 60 102 64C78 68 68 78 64 102C60 78 50 68 26 64C50 60 60 50 64 26Z" fill="url(#ink)"/>
+  <path d="M64 64h.01" fill="none" stroke="#151517" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

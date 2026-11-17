@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Assistant
+GenericName=Voice Assistant
+Comment=Talk to your computer: questions, apps and settings, on this computer
+Exec=nyx-settings --section assistant
+Icon=io.github.design_nexus.nyx.Assistant
+Terminal=false
+Categories=Utility;
+Keywords=assistant;voice;speech;ai;nyx-assistant;talk;
